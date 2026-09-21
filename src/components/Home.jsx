@@ -17,24 +17,23 @@ import RecentlyViewed from './RecentlyViewed';
 import ScentFinderQuiz from './ScentFinderQuiz';
 import OrderTrackingModal from './OrderTrackingModal';
 import InstallPrompt from './InstallPrompt';
+import LoginSheet from './LoginSheet';
+
+// New Storefront Pages
+import WishlistPage from './WishlistPage';
+import OffersPage from './OffersPage';
+import FaqPage from './FaqPage';
+import AboutPage from './AboutPage';
+import ContactPage from './ContactPage';
 
 import { MOCK_PRODUCTS } from '../data/products';
 import { getStorefrontData } from '../lib/storefrontData';
 import { safeGetItem, safeSetItem } from '../utils/storage';
-import { X, ArrowLeft, Grid, LogIn, ArrowUp, SlidersHorizontal } from 'lucide-react';
+import { X, ArrowLeft, Grid, ArrowUp, SlidersHorizontal } from 'lucide-react';
 
 /**
- * Home Component - Extrovat Lifestyle
- *
- * Page Component Order:
- * 1. Header and Search
- * 2. CategoryGrid
- * 3. BannerStrip
- * 4. Flash sale strip
- * 5. Product grid
+ * Home Component - Extrovat Lifestyle Storefront
  */
-import LoginSheet from './LoginSheet';
-
 export default function Home({
   onResetSplash,
   isAdmin = false,
@@ -46,6 +45,17 @@ export default function Home({
   const [activeTab, setActiveTab] = useState('home');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeSearchTerm, setActiveSearchTerm] = useState(null);
+
+  // Hash route tracking for inner storefront sub-pages
+  const [currentHash, setCurrentHash] = useState(() => window.location.hash || '#/');
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentHash(window.location.hash || '#/');
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Cart & Modals
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -87,6 +97,9 @@ export default function Home({
       { ...MOCK_PRODUCTS[1], quantity: 1, selectedSize: '6ml' }
     ]);
   });
+
+  // Wishlist count calculation
+  const wishlistCount = userProfile?.wishlist?.length || safeGetItem('extrovat_wishlist', ['1', '2']).length;
 
   // Save cart to localStorage
   useEffect(() => {
@@ -162,9 +175,7 @@ export default function Home({
     let filtered = productList.filter((p) => {
       const matchesPrice = p.price <= priceRange;
 
-      // Active category filter logic
       let matchesCat = true;
-
       if (activeTileSlug === 'offers') {
         matchesCat = Boolean(p.oldPrice && p.oldPrice > p.price);
       } else if (activeTileSlug === 'under-999' || selectedCategories.includes('Under ৳999')) {
@@ -225,9 +236,7 @@ export default function Home({
       }
       scrollToProductGrid();
     } else if (action.type === 'offers') {
-      setActiveTileSlug('offers');
-      setSelectedCategories([]);
-      scrollToProductGrid();
+      window.location.hash = '#/offers';
     } else if (action.type === 'link' && action.value) {
       window.location.hash = action.value;
     }
@@ -328,14 +337,22 @@ export default function Home({
       )
     : [];
 
+  // Determine sub-page route mode
+  const isWishlistRoute = currentHash.startsWith('#/wishlist');
+  const isOffersRoute = currentHash.startsWith('#/offers');
+  const isFaqRoute = currentHash.startsWith('#/faq');
+  const isAboutRoute = currentHash.startsWith('#/about');
+  const isContactRoute = currentHash.startsWith('#/contact');
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F8FC] text-[#0E1330] pb-24 selection:bg-[#2436F5] selection:text-white font-sans">
       {/* Install Prompt for PWA */}
       <InstallPrompt />
 
-      {/* 1. Header */}
+      {/* 1. Header with SideDrawer Integration */}
       <Header
         cartCount={cartCount}
+        wishlistCount={wishlistCount}
         onLogoClick={() => {
           setActiveSearchTerm(null);
           handleResetFilters();
@@ -492,10 +509,32 @@ export default function Home({
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Routes to specific page or Home view */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 pt-3 space-y-6">
-        {/* Search Results View */}
-        {activeSearchTerm ? (
+        {isWishlistRoute ? (
+          <WishlistPage
+            user={user}
+            userProfile={userProfile}
+            products={storefrontProducts}
+            onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
+          />
+        ) : isOffersRoute ? (
+          <OffersPage
+            products={storefrontProducts}
+            onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
+            user={user}
+            userProfile={userProfile}
+          />
+        ) : isFaqRoute ? (
+          <FaqPage />
+        ) : isAboutRoute ? (
+          <AboutPage />
+        ) : isContactRoute ? (
+          <ContactPage />
+        ) : activeSearchTerm ? (
+          /* Search Results View */
           <div className="space-y-4">
             <div className="flex items-center justify-between bg-[#FFFFFF] p-4 rounded-[20px] border-2 border-[#0E1330] shadow-[3px_3px_0px_#0E1330]">
               <div>
@@ -566,9 +605,7 @@ export default function Home({
             {/* 4. Flash Sale Strip */}
             <FlashSaleStrip
               onExploreSale={() => {
-                setActiveTileSlug('combo-offers');
-                setSelectedCategories(['Combo Offers']);
-                scrollToProductGrid();
+                window.location.hash = '#/offers';
               }}
             />
 
