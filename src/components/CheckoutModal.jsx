@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { WHATSAPP_NUMBER, BKASH_NUMBER, NAGAD_NUMBER } from '../config';
 import { BANGLADESH_DISTRICTS } from '../data/districts';
 import { formatBDT } from '../utils/currency';
@@ -153,6 +155,88 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, onSuccessOrd
       message += `Sender number: ${senderNumber.trim()}\n`;
       message += `Transaction ID (TrxID): ${trxId.trim()}\n`;
     }
+
+    // Generate Order Number EXT-YYMMDD-####
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const random4Digits = Math.floor(1000 + Math.random() * 9000);
+    const orderNo = `EXT-${yy}${mm}${dd}-${random4Digits}`;
+
+    const nowISO = now.toISOString();
+
+    // Prepare Order Object for orders/{orderNo}
+    const orderDocData = {
+      orderNo,
+      customer: {
+        name: fullName.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        district: district
+      },
+      items: cartItems.map((item) => ({
+        productId: item.id || '',
+        name: item.title || item.name || '',
+        size: item.selectedSize || '12ml',
+        qty: item.quantity || 1,
+        price: item.price || 0,
+        image: item.image || ''
+      })),
+      subtotal: itemsSubtotalBDT,
+      discount: 0,
+      couponCode: '',
+      deliveryCharge: deliveryChargeBDT,
+      total: grandTotalBDT,
+      payment: {
+        method: paymentMethod,
+        senderNumber: paymentMethod !== 'cod' ? senderNumber.trim() : '',
+        trxId: paymentMethod !== 'cod' ? trxId.trim() : '',
+        status: 'pending'
+      },
+      status: 'pending',
+      note: '',
+      courier: {
+        name: '',
+        trackingId: ''
+      },
+      stockDeducted: false,
+      timeline: [
+        {
+          status: 'pending',
+          at: nowISO
+        }
+      ],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    // Prepare Public Tracking Document trackOrders/{orderNo} (NO personal data)
+    const trackDocData = {
+      orderNo,
+      status: 'pending',
+      timeline: [
+        {
+          status: 'pending',
+          at: nowISO
+        }
+      ],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    // Write to Firestore asynchronously; wrap in try/catch so failure never blocks WhatsApp
+    const saveOrderToFirestore = async () => {
+      if (!db) return;
+      try {
+        await setDoc(doc(db, 'orders', orderNo), orderDocData);
+        await setDoc(doc(db, 'trackOrders', orderNo), trackDocData);
+      } catch (err) {
+        console.warn('Firestore order save failed (fallback gracefully to WhatsApp only):', err);
+      }
+    };
+
+    saveOrderToFirestore();
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=` + encodeURIComponent(message);
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');

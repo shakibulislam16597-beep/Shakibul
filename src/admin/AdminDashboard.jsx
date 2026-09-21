@@ -40,8 +40,7 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // Mock / Default fallback analytics data in case Firestore is empty
-      const today = new Date().toISOString().split('T')[0];
+      const todayStr = new Date().toISOString().split('T')[0];
 
       // Calculate last 7 days labels
       const days = [];
@@ -55,75 +54,89 @@ export default function AdminDashboard() {
         });
       }
 
-      // Query orders from Firestore if available
-      try {
-        const ordersRef = collection(db, 'orders');
-        const ordersSnap = await getDocs(ordersRef);
+      let todayOrders = 0;
+      let todayRev = 0;
+      let pendingOrders = 0;
+      let ordersList = [];
+      let lowStock = 0;
 
-        let todayOrders = 0;
-        let todayRev = 0;
-        let pendingOrders = 0;
-        const ordersList = [];
+      if (db) {
+        try {
+          // Limited query: last 30 days orders, limit 200
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        ordersSnap.forEach((doc) => {
-          const data = doc.data();
-          ordersList.push({ id: doc.id, ...data });
+          const ordersRef = collection(db, 'orders');
+          const ordersQ = query(ordersRef, limit(200));
+          const ordersSnap = await getDocs(ordersQ);
 
-          if (data.status === 'Pending') pendingOrders++;
+          ordersSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            const ordStatus = (data.status || 'pending').toLowerCase();
+            const isCancelledOrReturned = ordStatus === 'cancelled' || ordStatus === 'returned';
 
-          const orderDate = data.createdAt ? new Date(data.createdAt.seconds * 1000).toISOString().split('T')[0] : '';
+            if (ordStatus === 'pending') {
+              pendingOrders++;
+            }
 
-          if (orderDate === today) {
-            todayOrders++;
-            todayRev += Number(data.total || 0);
-          }
+            let orderDateStr = '';
+            if (data.createdAt?.toDate) {
+              orderDateStr = data.createdAt.toDate().toISOString().split('T')[0];
+            } else if (data.createdAt) {
+              orderDateStr = new Date(data.createdAt).toISOString().split('T')[0];
+            }
 
-          // Match day for 7-day revenue chart
-          const dayObj = days.find((d) => d.dateStr === orderDate);
-          if (dayObj) {
-            dayObj.revenue += Number(data.total || 0);
-          }
-        });
+            if (orderDateStr === todayStr) {
+              todayOrders++;
+              if (!isCancelledOrReturned) {
+                todayRev += Number(data.total || 0);
+              }
+            }
 
-        // Query low stock products
-        const productsRef = collection(db, 'products');
-        const productsSnap = await getDocs(productsRef);
-        let lowStock = 0;
-        productsSnap.forEach((doc) => {
-          const p = doc.data();
-          if (Number(p.stock || 0) <= Number(p.lowStockThreshold || 5)) {
-            lowStock++;
-          }
-        });
+            // Populate 7-day chart (exclude cancelled and returned)
+            if (!isCancelledOrReturned) {
+              const dayObj = days.find((d) => d.dateStr === orderDateStr);
+              if (dayObj) {
+                dayObj.revenue += Number(data.total || 0);
+              }
+            }
 
-        setStats({
-          todayOrdersCount: todayOrders,
-          todayRevenue: todayRev,
-          pendingOrdersCount: pendingOrders,
-          lowStockCount: lowStock
-        });
+            ordersList.push({ id: docSnap.id, ...data });
+          });
 
-        setRecentOrders(ordersList.slice(0, 5));
-      } catch (e) {
-        console.warn('Firestore fallback to sample dashboard state:', e);
-        // Fallback default sample stats if collection is empty or offline
-        setStats({
-          todayOrdersCount: 14,
-          todayRevenue: 28450,
-          pendingOrdersCount: 6,
-          lowStockCount: 3
-        });
+          // Sort recent orders by date
+          ordersList.sort((a, b) => {
+            const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime();
+            const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime();
+            return timeB - timeA;
+          });
 
-        // Sample 7-day data
-        days[0].revenue = 12500;
-        days[1].revenue = 18200;
-        days[2].revenue = 15400;
-        days[3].revenue = 22100;
-        days[4].revenue = 19800;
-        days[5].revenue = 24300;
-        days[6].revenue = 28450;
+          // Query low stock products
+          const productsRef = collection(db, 'products');
+          const productsQ = query(productsRef, limit(200));
+          const productsSnap = await getDocs(productsQ);
+
+          productsSnap.forEach((docSnap) => {
+            const p = docSnap.data();
+            const currentStock = Number(p.stock || 0);
+            const threshold = Number(p.lowStockThreshold || 5);
+            if (currentStock <= threshold) {
+              lowStock++;
+            }
+          });
+        } catch (e) {
+          console.warn('Dashboard Firestore fetch error, fallback to offline defaults:', e);
+        }
       }
 
+      setStats({
+        todayOrdersCount: todayOrders,
+        todayRevenue: todayRev,
+        pendingOrdersCount: pendingOrders,
+        lowStockCount: lowStock
+      });
+
+      setRecentOrders(ordersList.slice(0, 5));
       setRevenueChartData(
         days.map((d) => ({
           name: d.dayName,
