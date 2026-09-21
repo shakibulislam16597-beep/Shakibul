@@ -23,6 +23,16 @@ export function safeSetItem(key, value) {
   }
 }
 
+export function safeRemoveItem(key) {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (err) {
+    console.warn(`Error removing localStorage key "${key}":`, err);
+    return false;
+  }
+}
+
 export function getStorageItem(key, defaultValue = null) {
   return safeGetItem(key, defaultValue);
 }

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { doc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { WHATSAPP_NUMBER, BKASH_NUMBER, NAGAD_NUMBER } from '../config';
 import { BANGLADESH_DISTRICTS } from '../data/districts';
@@ -26,14 +26,26 @@ import {
  * - Rebrand header and messages: "I want to order from Extrovat Lifestyle"
  * - 2px ink borders, 4px offset shadows, sentence case typography
  */
-export default function CheckoutModal({ isOpen, onClose, cartItems, onSuccessOrder }) {
+export default function CheckoutModal({
+  isOpen,
+  onClose,
+  cartItems,
+  onSuccessOrder,
+  user = null,
+  userProfile = null
+}) {
   if (!isOpen) return null;
 
+  const defaultAddr = userProfile?.addresses?.find((a) => a.isDefault) || userProfile?.addresses?.[0];
+
   // Form Fields
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [district, setDistrict] = useState('Dhaka');
+  const [fullName, setFullName] = useState(
+    defaultAddr?.name || userProfile?.displayName || user?.displayName || ''
+  );
+  const [phone, setPhone] = useState(defaultAddr?.phone || userProfile?.phone || '');
+  const [address, setAddress] = useState(defaultAddr?.address || '');
+  const [district, setDistrict] = useState(defaultAddr?.district || 'Dhaka');
+  const [saveAddressChecked, setSaveAddressChecked] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'bkash' | 'nagad'
 
   // Payment box required fields
@@ -169,14 +181,16 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, onSuccessOrd
     // Prepare Order Object for orders/{orderNo}
     const orderDocData = {
       orderNo,
+      uid: user ? user.uid : null,
       customer: {
         name: fullName.trim(),
         phone: phone.trim(),
         address: address.trim(),
-        district: district
+        district: district,
+        email: user ? user.email : ''
       },
       items: cartItems.map((item) => ({
-        productId: item.id || '',
+        productId: String(item.id || ''),
         name: item.title || item.name || '',
         size: item.selectedSize || '12ml',
         qty: item.quantity || 1,
@@ -231,6 +245,22 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, onSuccessOrd
       try {
         await setDoc(doc(db, 'orders', orderNo), orderDocData);
         await setDoc(doc(db, 'trackOrders', orderNo), trackDocData);
+
+        // Save address to user profile if checked
+        if (user && saveAddressChecked) {
+          const userRef = doc(db, 'users', user.uid);
+          const newAddress = {
+            label: 'Delivery Address',
+            name: fullName.trim(),
+            phone: phone.trim(),
+            address: address.trim(),
+            district: district,
+            isDefault: (userProfile?.addresses?.length || 0) === 0
+          };
+          await updateDoc(userRef, {
+            addresses: arrayUnion(newAddress)
+          });
+        }
       } catch (err) {
         console.warn('Firestore order save failed (fallback gracefully to WhatsApp only):', err);
       }
@@ -374,6 +404,22 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, onSuccessOrd
                 </select>
               </div>
             </div>
+
+            {/* Save Address Checkbox for logged in users */}
+            {user && (
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="chkSaveAddress"
+                  checked={saveAddressChecked}
+                  onChange={(e) => setSaveAddressChecked(e.target.checked)}
+                  className="w-4 h-4 accent-[#2436F5] cursor-pointer"
+                />
+                <label htmlFor="chkSaveAddress" className="text-xs font-heading font-bold text-[#0E1330] cursor-pointer">
+                  Save this address to my profile
+                </label>
+              </div>
+            )}
           </div>
 
           {/* 2. Order Summary */}

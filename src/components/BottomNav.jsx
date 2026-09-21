@@ -17,9 +17,23 @@ export default function BottomNav({
   cartCount = 0,
   onOpenCart,
   onOpenCategory,
-  onOpenLogin
+  onOpenLogin,
+  user = null,
+  userProfile = null
 }) {
   const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
+
+  const avatarSrc = userProfile?.photoURL || user?.photoURL;
+  const displayName = userProfile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Account';
+  const initialLetter = displayName.charAt(0).toUpperCase();
+
+  const handleAccountAction = () => {
+    if (user) {
+      window.location.hash = '#/account';
+    } else if (onOpenLogin) {
+      onOpenLogin();
+    }
+  };
 
   const items = [
     {
@@ -43,7 +57,13 @@ export default function BottomNav({
       isExternal: true,
       href: 'tel:+8809638316596'
     },
-    { id: 'login', label: 'Login', icon: User, action: () => onOpenLogin && onOpenLogin() },
+    {
+      id: 'login',
+      label: user ? 'Account' : 'Login',
+      icon: User,
+      isUserAvatar: Boolean(user),
+      action: handleAccountAction
+    },
   ];
 
   return (
@@ -110,13 +130,34 @@ export default function BottomNav({
               }`}
             >
               <div className="relative">
-                <div
-                  className={`px-3 py-1 rounded-full transition-all ${
-                    isActive ? 'bg-[#2436F5] text-[#FFFFFF]' : 'bg-transparent text-[#0E1330]'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'text-[#FFFFFF]' : 'text-[#0E1330]'}`} />
-                </div>
+                {item.isUserAvatar ? (
+                  <div
+                    className={`px-2 py-0.5 rounded-full transition-all flex items-center justify-center ${
+                      isActive ? 'bg-[#2436F5] text-[#FFFFFF]' : 'bg-transparent text-[#0E1330]'
+                    }`}
+                  >
+                    {avatarSrc ? (
+                      <img
+                        src={avatarSrc}
+                        alt={displayName}
+                        referrerPolicy="no-referrer"
+                        className="w-[22px] h-[22px] rounded-full object-cover border border-[#0E1330]"
+                      />
+                    ) : (
+                      <div className="w-[22px] h-[22px] rounded-full bg-[#FFC933] text-[#0E1330] border border-[#0E1330] flex items-center justify-center font-heading font-extrabold text-[10px]">
+                        {initialLetter}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    className={`px-3 py-1 rounded-full transition-all ${
+                      isActive ? 'bg-[#2436F5] text-[#FFFFFF]' : 'bg-transparent text-[#0E1330]'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'text-[#FFFFFF]' : 'text-[#0E1330]'}`} />
+                  </div>
+                )}
 
                 {item.id === 'cart' && cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-[#FFC933] text-[#0E1330] border border-[#0E1330] text-[10px] font-heading font-extrabold rounded-full">

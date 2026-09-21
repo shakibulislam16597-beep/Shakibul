@@ -33,7 +33,15 @@ import { X, ArrowLeft, Grid, LogIn, ArrowUp, SlidersHorizontal } from 'lucide-re
  * 4. Flash sale strip
  * 5. Product grid
  */
-export default function Home({ onResetSplash, isAdmin = false }) {
+import LoginSheet from './LoginSheet';
+
+export default function Home({
+  onResetSplash,
+  isAdmin = false,
+  user = null,
+  userProfile = null,
+  onLogout
+}) {
   const [storefrontProducts, setStorefrontProducts] = useState(MOCK_PRODUCTS);
   const [activeTab, setActiveTab] = useState('home');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -337,6 +345,10 @@ export default function Home({ onResetSplash, isAdmin = false }) {
         isSearchOpen={isSearchOpen}
         onOpenTrackOrder={() => setIsTrackOrderOpen(true)}
         isAdmin={isAdmin}
+        user={user}
+        userProfile={userProfile}
+        onOpenLogin={() => setIsLoginModalOpen(true)}
+        onLogout={onLogout}
       />
 
       {/* Floating Cart Widget on Right Edge */}
@@ -416,12 +428,20 @@ export default function Home({ onResetSplash, isAdmin = false }) {
         onClose={() => setIsCheckoutOpen(false)}
         cartItems={cartItems}
         onSuccessOrder={handleSuccessOrder}
+        user={user}
+        userProfile={userProfile}
       />
 
       {/* Order Success Confirmation Modal */}
       <OrderSuccessModal
         isOpen={isSuccessOpen}
         onClose={() => setIsSuccessOpen(false)}
+      />
+
+      {/* Login Sheet Modal */}
+      <LoginSheet
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
 
       {/* Category Drawer Modal */}
@@ -472,44 +492,6 @@ export default function Home({ onResetSplash, isAdmin = false }) {
         </div>
       )}
 
-      {/* Login Modal */}
-      {isLoginModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0E1330]/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-[#FFFFFF] rounded-[24px] max-w-sm w-full p-6 border-2 border-[#0E1330] shadow-[4px_4px_0px_#0E1330] relative text-center text-[#0E1330] space-y-4">
-            <button
-              type="button"
-              onClick={() => setIsLoginModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl border-2 border-[#0E1330] bg-[#FFFFFF] text-[#0E1330] hover:bg-[#F7F8FC] cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="w-14 h-14 bg-[#FFC933] rounded-full flex items-center justify-center text-[#0E1330] mx-auto border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330]">
-              <LogIn className="w-7 h-7" />
-            </div>
-
-            <h3 className="text-lg font-heading font-extrabold text-[#0E1330]">Customer login</h3>
-            <p className="text-xs font-sans text-[#5B6079]">
-              Enter mobile number to view order history and saved addresses.
-            </p>
-
-            <input
-              type="tel"
-              placeholder="e.g. 01712345678"
-              className="w-full px-3 py-2.5 bg-[#F7F8FC] border-2 border-[#0E1330] rounded-xl text-xs text-center font-bold focus:outline-none focus:border-[#2436F5]"
-            />
-
-            <button
-              type="button"
-              onClick={() => setIsLoginModalOpen(false)}
-              className="w-full py-3 bg-[#2436F5] text-[#FFFFFF] font-heading font-extrabold text-xs uppercase tracking-wider rounded-full border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] transition-colors cursor-pointer"
-            >
-              Send OTP
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 pt-3 space-y-6">
         {/* Search Results View */}
@@ -546,6 +528,8 @@ export default function Home({ onResetSplash, isAdmin = false }) {
                     onBuyNow={handleBuyNow}
                     onAddToCart={handleAddToCart}
                     onQuickView={handleQuickView}
+                    user={user}
+                    userProfile={userProfile}
                   />
                 ))}
               </div>
@@ -637,6 +621,8 @@ export default function Home({ onResetSplash, isAdmin = false }) {
                           onBuyNow={handleBuyNow}
                           onAddToCart={handleAddToCart}
                           onQuickView={handleQuickView}
+                          user={user}
+                          userProfile={userProfile}
                         />
                       ))}
                     </div>
@@ -706,6 +692,8 @@ export default function Home({ onResetSplash, isAdmin = false }) {
         onOpenCart={() => setIsCartOpen(true)}
         onOpenCategory={() => setIsCategoryModalOpen(true)}
         onOpenLogin={() => setIsLoginModalOpen(true)}
+        user={user}
+        userProfile={userProfile}
       />
     </div>
   );
