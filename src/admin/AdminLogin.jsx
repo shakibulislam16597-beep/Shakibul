@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { Eye, EyeOff, Lock, Mail, Loader2, ShieldAlert } from 'lucide-react';
 
@@ -62,7 +62,8 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
       setError('Please enter both email and password.');
       return;
     }
@@ -71,18 +72,42 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
     setError('');
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
       const user = userCredential.user;
 
-      // Read admins/{uid} document from Firestore
-      const adminDocRef = doc(db, 'admins', user.uid);
-      const adminDocSnap = await getDoc(adminDocRef);
+      // Read admins/{uid} document from Firestore inside try/catch & log real error to console
+      let isAdmin = false;
+      try {
+        const adminDocRef = doc(db, 'admins', user.uid);
+        const adminDocSnap = await getDoc(adminDocRef);
+        if (adminDocSnap.exists() && adminDocSnap.data()?.active === true) {
+          isAdmin = true;
+        }
+      } catch (adminErr) {
+        console.error('Firestore admin check error:', adminErr);
+      }
 
-      if (!adminDocSnap.exists() || adminDocSnap.data()?.active !== true) {
+      if (!isAdmin) {
         await signOut(auth);
         setError('This account has no admin access.');
         setLoading(false);
         return;
+      }
+
+      // Non-blocking write to loginHistory
+      try {
+        if (db && user?.uid) {
+          addDoc(collection(db, 'loginHistory'), {
+            uid: user.uid,
+            email: user.email || trimmedEmail,
+            loginAt: serverTimestamp(),
+            userAgent: navigator.userAgent || ''
+          }).catch((historyErr) => {
+            console.warn('loginHistory log failed (non-blocking):', historyErr);
+          });
+        }
+      } catch (logErr) {
+        console.warn('loginHistory error:', logErr);
       }
 
       setLoading(false);
@@ -91,8 +116,16 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
     } catch (err) {
       console.error('Admin login error:', err);
       setLoading(false);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/too-many-requests') {
+        setError('Too many attempts, please wait 30 minutes and try again');
+      } else if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/wrong-password'
+      ) {
         setError('Invalid email or password.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError('Unauthorized domain. Please check your Firebase settings.');
       } else {
         setError(err.message || 'An error occurred during sign-in.');
       }
