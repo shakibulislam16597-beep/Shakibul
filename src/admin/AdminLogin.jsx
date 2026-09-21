@@ -4,15 +4,63 @@ import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/fires
 import { auth, db } from '../lib/firebase';
 import { Eye, EyeOff, Lock, Mail, Loader2, ShieldAlert } from 'lucide-react';
 
-export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
+export default function AdminLogin({
+  onLoginSuccess,
+  user,
+  isAdminActive,
+  authChecking = false,
+  adminDocData = null,
+  adminCheckError = null
+}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // If a customer user is already logged in without admin permissions
-  if (user && !isAdminActive) {
+  const snapExists = adminDocData !== null && adminDocData !== undefined;
+  const activeVal = adminDocData?.active;
+  const activeType = typeof activeVal;
+  const roleVal = adminDocData?.role;
+  const errCodeMsg = adminCheckError
+    ? `${adminCheckError.code || 'error'}: ${adminCheckError.message || adminCheckError}`
+    : 'none';
+
+  // Debug logging for task 4
+  React.useEffect(() => {
+    if (user && (!isAdminActive || adminCheckError)) {
+      console.log('[Admin Access Debug]', {
+        uid: user.uid,
+        email: user.email,
+        docExists: snapExists,
+        activeValue: activeVal,
+        activeType: activeType,
+        roleValue: roleVal,
+        errorCodeOrMessage: errCodeMsg,
+        checkedCollection: 'admins',
+        checkedField: 'active === true'
+      });
+    }
+  }, [user, isAdminActive, adminCheckError, adminDocData]);
+
+  // If auth is still resolving, show loading
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center p-4 font-sans text-[#0E1330]">
+        <div className="text-center space-y-2">
+          <Loader2 className="w-8 h-8 text-[#2436F5] animate-spin mx-auto" />
+          <p className="text-xs font-heading font-bold text-[#5B6079]">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If a user is already logged in without active admin permissions or with a check error
+  if (user && (!isAdminActive || adminCheckError)) {
+    const errorHeading = adminCheckError
+      ? `Could not verify admin access: ${adminCheckError.code || adminCheckError.message || 'unknown error'}`
+      : 'This account has no admin access';
+
     return (
       <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center p-4 font-sans text-[#0E1330]">
         <div className="bg-[#FFFFFF] rounded-[24px] border-2 border-[#0E1330] shadow-[6px_6px_0px_#0E1330] p-6 sm:p-8 max-w-md w-full space-y-6 text-center">
@@ -21,12 +69,27 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
           </div>
           <div>
             <h1 className="text-xl font-heading font-extrabold text-[#0E1330]">
-              This account has no admin access
+              {errorHeading}
             </h1>
             <p className="text-xs font-sans text-[#5B6079] mt-1">
-              Signed in as <strong>{user.email || 'Customer'}</strong>. This account does not have staff privileges.
+              Signed in as <strong>{user.email || user.uid || 'Customer'}</strong>.
+              {adminCheckError ? ' An error occurred while checking permissions.' : ' This account does not have staff privileges.'}
             </p>
           </div>
+
+          {/* Temporary Debug Info (Task 4) */}
+          <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] font-mono text-amber-900 text-left space-y-1 overflow-x-auto">
+            <div className="font-bold border-b border-amber-200 pb-1 text-[10px] uppercase tracking-wider text-amber-800">
+              Debug Info (Temporary)
+            </div>
+            <div><strong>Signed-in UID:</strong> {user.uid}</div>
+            <div><strong>admins/{user.uid} exists:</strong> {snapExists ? 'true' : 'false'}</div>
+            <div><strong>data.active:</strong> {String(activeVal)} (type: {activeType})</div>
+            <div><strong>data.role:</strong> {String(roleVal ?? 'undefined')}</div>
+            <div><strong>Error:</strong> {errCodeMsg}</div>
+            <div><strong>Checked:</strong> admins/{user.uid} where active === true</div>
+          </div>
+
           <div className="flex flex-col gap-2 pt-2">
             <button
               type="button"
@@ -73,18 +136,27 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
-      const user = userCredential.user;
+      const loggedInUser = userCredential.user;
 
-      // Read admins/{uid} document from Firestore inside try/catch & log real error to console
+      // Read admins/{uid} document from Firestore inside try/catch & distinguish errors
       let isAdmin = false;
+      let checkError = null;
       try {
-        const adminDocRef = doc(db, 'admins', user.uid);
+        const adminDocRef = doc(db, 'admins', loggedInUser.uid);
         const adminDocSnap = await getDoc(adminDocRef);
         if (adminDocSnap.exists() && adminDocSnap.data()?.active === true) {
           isAdmin = true;
         }
       } catch (adminErr) {
         console.error('Firestore admin check error:', adminErr);
+        checkError = adminErr;
+      }
+
+      if (checkError) {
+        await signOut(auth);
+        setError(`Could not verify admin access: ${checkError.code || checkError.message || 'unknown error'}`);
+        setLoading(false);
+        return;
       }
 
       if (!isAdmin) {
@@ -96,10 +168,10 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
 
       // Non-blocking write to loginHistory
       try {
-        if (db && user?.uid) {
+        if (db && loggedInUser?.uid) {
           addDoc(collection(db, 'loginHistory'), {
-            uid: user.uid,
-            email: user.email || trimmedEmail,
+            uid: loggedInUser.uid,
+            email: loggedInUser.email || trimmedEmail,
             loginAt: serverTimestamp(),
             userAgent: navigator.userAgent || ''
           }).catch((historyErr) => {
@@ -107,7 +179,7 @@ export default function AdminLogin({ onLoginSuccess, user, isAdminActive }) {
           });
         }
       } catch (logErr) {
-        console.warn('loginHistory error:', logErr);
+        console.warn('loginHistory error (non-blocking):', logErr);
       }
 
       setLoading(false);

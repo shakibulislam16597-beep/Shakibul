@@ -31,7 +31,10 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [isAdminActive, setIsAdminActive] = useState(false);
+  const [adminDocData, setAdminDocData] = useState(null);
+  const [adminCheckError, setAdminCheckError] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
+  const [adminChecking, setAdminChecking] = useState(false);
 
   // Check email link sign-in on app start
   useEffect(() => {
@@ -77,7 +80,10 @@ export default function App() {
     if (!auth || !db) {
       setUser(null);
       setIsAdminActive(false);
+      setAdminDocData(null);
+      setAdminCheckError(null);
       setAuthChecking(false);
+      setAdminChecking(false);
       return;
     }
 
@@ -88,26 +94,47 @@ export default function App() {
         async (currentUser) => {
           setUser(currentUser);
           if (currentUser) {
-            try {
-              // Ensure customer profile in users/{uid}
-              const profile = await ensureUserProfile(currentUser);
-              setUserProfile(profile);
+            setAdminChecking(true);
+            setAdminCheckError(null);
 
-              // Check if active admin
+            try {
               const adminDocRef = doc(db, 'admins', currentUser.uid);
               const adminDocSnap = await getDoc(adminDocRef);
-              if (adminDocSnap.exists() && adminDocSnap.data()?.active === true) {
-                setIsAdminActive(true);
+              if (adminDocSnap.exists()) {
+                const data = adminDocSnap.data();
+                setAdminDocData(data);
+                if (data?.active === true) {
+                  setIsAdminActive(true);
+                } else {
+                  setIsAdminActive(false);
+                }
               } else {
+                setAdminDocData(null);
                 setIsAdminActive(false);
               }
-            } catch (e) {
-              console.warn('Error verifying admin/user status:', e);
+            } catch (adminErr) {
+              console.error('Error checking admins/{uid}:', adminErr);
+              setAdminDocData(null);
               setIsAdminActive(false);
+              setAdminCheckError(adminErr);
+            } finally {
+              setAdminChecking(false);
+            }
+
+            // Non-blocking sync for customer profile
+            try {
+              ensureUserProfile(currentUser)
+                .then((profile) => setUserProfile(profile))
+                .catch((pErr) => console.warn('Customer profile sync warning:', pErr));
+            } catch (pErr) {
+              console.warn('ensureUserProfile call warning:', pErr);
             }
           } else {
             setUserProfile(null);
             setIsAdminActive(false);
+            setAdminDocData(null);
+            setAdminCheckError(null);
+            setAdminChecking(false);
           }
           setAuthChecking(false);
         },
@@ -115,14 +142,20 @@ export default function App() {
           console.warn('Auth state listener error:', error);
           setUser(null);
           setIsAdminActive(false);
+          setAdminDocData(null);
+          setAdminCheckError(error);
           setAuthChecking(false);
+          setAdminChecking(false);
         }
       );
     } catch (err) {
       console.warn('Firebase Auth initialization error:', err);
       setUser(null);
       setIsAdminActive(false);
+      setAdminDocData(null);
+      setAdminCheckError(err);
       setAuthChecking(false);
+      setAdminChecking(false);
     }
 
     return () => {
@@ -182,12 +215,7 @@ export default function App() {
   const isAdminRoute = currentHash.startsWith('#/admin');
 
   if (isAdminRoute) {
-    if (currentHash === '#/admin/login') {
-      return <AdminLogin user={user} isAdminActive={isAdminActive} />;
-    }
-
-    // Protected Admin Routes
-    if (authChecking) {
+    if (authChecking || adminChecking) {
       return (
         <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center font-sans text-[#0E1330]">
           <div className="text-center space-y-2">
@@ -198,10 +226,29 @@ export default function App() {
       );
     }
 
-    if (!user || !isAdminActive) {
-      // Redirect to login if unauthenticated or not an active admin
-      window.location.hash = '#/admin/login';
-      return <AdminLogin />;
+    if (currentHash === '#/admin/login') {
+      return (
+        <AdminLogin
+          user={user}
+          isAdminActive={isAdminActive}
+          authChecking={authChecking || adminChecking}
+          adminDocData={adminDocData}
+          adminCheckError={adminCheckError}
+        />
+      );
+    }
+
+    // Protected Admin Routes
+    if (!user || !isAdminActive || adminCheckError) {
+      return (
+        <AdminLogin
+          user={user}
+          isAdminActive={isAdminActive}
+          authChecking={authChecking || adminChecking}
+          adminDocData={adminDocData}
+          adminCheckError={adminCheckError}
+        />
+      );
     }
 
     return <AdminLayout currentHash={currentHash} user={user} />;
