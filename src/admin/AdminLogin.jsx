@@ -60,13 +60,19 @@ export default function AdminLogin({ onLoginSuccess }) {
     }
   };
 
+  const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
+
   return (
     <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center p-4 font-sans text-[#0E1330]">
       <div className="bg-[#FFFFFF] rounded-[24px] border-2 border-[#0E1330] shadow-[6px_6px_0px_#0E1330] p-6 sm:p-8 max-w-md w-full space-y-6">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#FFC933] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] text-[#0E1330] mb-2">
-            <Lock className="w-6 h-6" />
-          </div>
+        <div className="text-center space-y-2 flex flex-col items-center">
+          <img
+            src={logoSrc}
+            alt="Extrovat Lifestyle logo"
+            width={72}
+            height={72}
+            className="w-[72px] h-[72px] rounded-full border-2 border-[#0E1330] object-cover bg-white shadow-[2px_2px_0px_#0E1330] mb-1"
+          />
           <h1 className="text-2xl font-heading font-extrabold text-[#0E1330]">
             Staff Portal
           </h1>

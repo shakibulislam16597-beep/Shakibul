@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { Menu, Search, X, Package, Phone, Lock, ShieldCheck, MessageCircle } from 'lucide-react';
+import { Menu, Search, ShoppingBag, X, Package, Phone, Lock, ShieldCheck, MessageCircle } from 'lucide-react';
 import AnnouncementBar from './AnnouncementBar';
 import { WHATSAPP_NUMBER } from '../config';
 
 /**
  * Header Component - Extrovat Lifestyle
+ *
+ * Requirements:
+ * - Always visible while scrolling.
+ * - Logo image on LEFT as a 42px circle with a 2px ink border, followed by small wordmark "Extrovat" (font-weight 800 / font-extrabold).
+ * - Whole logo area is a button or link to Home page with aria-label="Extrovat Lifestyle home".
+ * - Hamburger right after the logo.
+ * - Search and cart icons on the right.
+ * - No overflow on 360px wide screen.
  */
 export default function Header({
   cartCount = 0,
@@ -16,6 +24,7 @@ export default function Header({
   isAdmin = false
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
 
   const categories = [
     'Attar',
@@ -36,49 +45,75 @@ export default function Header({
       <AnnouncementBar />
 
       <header className="sticky top-0 z-40 w-full bg-[#F7F8FC] border-b-2 border-[#0E1330] transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Left: Hamburger Menu */}
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen(true)}
-            aria-label="Open menu"
-            className="p-2 -ml-2 text-[#0E1330] hover:bg-[#FFFFFF] rounded-xl border-2 border-transparent hover:border-[#0E1330] transition-all active:scale-95 cursor-pointer"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-
-          {/* Center: Brand Logo Wordmark */}
-          <button
-            type="button"
-            onClick={onLogoClick}
-            aria-label="Extrovat Lifestyle Home"
-            className="flex flex-col items-center cursor-pointer focus:outline-none"
-          >
-            <div className="flex items-baseline gap-0.5">
-              <span className="font-heading font-extrabold text-xl sm:text-2xl text-[#0E1330] tracking-tight">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between gap-1 sm:gap-2 overflow-hidden">
+          {/* Left: Logo Area + Hamburger */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Logo Button/Link */}
+            <a
+              href="#/"
+              onClick={(e) => {
+                if (onLogoClick) {
+                  onLogoClick(e);
+                }
+              }}
+              aria-label="Extrovat Lifestyle home"
+              className="flex items-center gap-1.5 focus:outline-none cursor-pointer group shrink-0"
+            >
+              <img
+                src={logoSrc}
+                alt="Extrovat Lifestyle logo"
+                width={42}
+                height={42}
+                className="w-[42px] h-[42px] rounded-full border-2 border-[#0E1330] object-cover bg-white shrink-0"
+              />
+              <span className="font-heading font-extrabold text-base sm:text-lg text-[#0E1330] tracking-tight shrink-0">
                 Extrovat
               </span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FFC933] border border-[#0E1330] inline-block" />
-            </div>
-            <span className="text-[10px] font-sans font-medium text-[#5B6079] -mt-1 tracking-wider">
-              Lifestyle
-            </span>
-          </button>
+            </a>
 
-          {/* Right: Search Icon Toggle */}
-          <button
-            type="button"
-            onClick={onToggleSearch}
-            aria-label="Search"
-            aria-expanded={isSearchOpen}
-            className={`p-2 -mr-2 rounded-xl border-2 transition-all cursor-pointer ${
-              isSearchOpen
-                ? 'bg-[#FFFFFF] text-[#0E1330] border-[#0E1330] shadow-[2px_2px_0px_#0E1330]'
-                : 'border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330]'
-            }`}
-          >
-            <Search className="w-6 h-6" />
-          </button>
+            {/* Hamburger Button right after logo */}
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
+              className="p-1.5 sm:p-2 text-[#0E1330] hover:bg-[#FFFFFF] rounded-xl border-2 border-transparent hover:border-[#0E1330] transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+
+          {/* Right: Search and Cart Controls */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Search Icon Toggle */}
+            <button
+              type="button"
+              onClick={onToggleSearch}
+              aria-label="Search"
+              aria-expanded={isSearchOpen}
+              className={`p-1.5 sm:p-2 rounded-xl border-2 transition-all cursor-pointer shrink-0 ${
+                isSearchOpen
+                  ? 'bg-[#FFFFFF] text-[#0E1330] border-[#0E1330] shadow-[2px_2px_0px_#0E1330]'
+                  : 'border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330]'
+              }`}
+            >
+              <Search className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+
+            {/* Cart Icon */}
+            <button
+              type="button"
+              onClick={onCartClick}
+              aria-label={`Shopping cart, ${cartCount} items`}
+              className="relative p-1.5 sm:p-2 rounded-xl border-2 border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330] transition-all cursor-pointer shrink-0"
+            >
+              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-[#FFC933] text-[#0E1330] border border-[#0E1330] text-[10px] font-heading font-extrabold rounded-full">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -97,16 +132,22 @@ export default function Header({
             <div>
               {/* Drawer Header */}
               <div className="p-4 border-b-2 border-[#0E1330] flex items-center justify-between bg-[#FFFFFF]">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="font-heading font-extrabold text-lg text-[#0E1330]">
+                <div className="flex items-center gap-2">
+                  <img
+                    src={logoSrc}
+                    alt="Extrovat Lifestyle logo"
+                    width={36}
+                    height={36}
+                    className="w-[36px] h-[36px] rounded-full border-2 border-[#0E1330] object-cover bg-white"
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-heading font-extrabold text-base text-[#0E1330] leading-tight">
                       Extrovat
                     </span>
-                    <span className="w-2 h-2 rounded-full bg-[#FFC933] border border-[#0E1330] inline-block" />
+                    <span className="text-[10px] font-sans text-[#5B6079]">
+                      Lifestyle products & fragrances
+                    </span>
                   </div>
-                  <span className="text-[10px] font-sans text-[#5B6079]">
-                    Lifestyle products & fragrances
-                  </span>
                 </div>
 
                 <button

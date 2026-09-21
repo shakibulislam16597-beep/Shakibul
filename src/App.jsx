@@ -9,7 +9,15 @@ import AdminLogin from './admin/AdminLogin';
 import AdminLayout from './admin/AdminLayout';
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      const seen = sessionStorage.getItem('extrovat_splash_seen');
+      return !seen;
+    } catch (e) {
+      console.warn('sessionStorage check error:', e);
+      return false;
+    }
+  });
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
   const [user, setUser] = useState(null);
   const [isAdminActive, setIsAdminActive] = useState(false);
@@ -79,10 +87,20 @@ export default function App() {
   }, []);
 
   const handleSplashFinish = () => {
+    try {
+      sessionStorage.setItem('extrovat_splash_seen', 'true');
+    } catch (e) {
+      console.warn('sessionStorage set error:', e);
+    }
     setShowSplash(false);
   };
 
   const handleResetSplash = () => {
+    try {
+      sessionStorage.removeItem('extrovat_splash_seen');
+    } catch (e) {
+      console.warn('sessionStorage remove error:', e);
+    }
     setShowSplash(true);
   };
 

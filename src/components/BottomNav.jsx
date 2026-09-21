@@ -1,14 +1,15 @@
 import React from 'react';
-import { Home, Grid, ShoppingBag, Phone, User } from 'lucide-react';
+import { Grid, ShoppingBag, Phone, User } from 'lucide-react';
 
 /**
  * BottomNav Component - Extrovat Lifestyle
  *
  * Requirements:
- * - Fixed white bottom bar with 2px ink top border
- * - Active item shows an ultramarine rounded pill behind its icon with a white icon
- * - Sentence case labels
- * - Safe-area padding
+ * - Use logo image (26px circle) as the Home tab icon, like a mobile shopping app, with active state kept.
+ * - Fixed white bottom bar with 2px ink top border.
+ * - Active item shows active styling / ultramarine pill where applicable.
+ * - Sentence case labels.
+ * - Width/height attributes and alt="Extrovat Lifestyle logo" on logo image.
  */
 export default function BottomNav({
   activeTab = 'home',
@@ -18,8 +19,15 @@ export default function BottomNav({
   onOpenCategory,
   onOpenLogin
 }) {
+  const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
+
   const items = [
-    { id: 'home', label: 'Home', icon: Home, action: () => onTabSelect && onTabSelect('home') },
+    {
+      id: 'home',
+      label: 'Home',
+      isLogo: true,
+      action: () => onTabSelect && onTabSelect('home')
+    },
     { id: 'category', label: 'Category', icon: Grid, action: () => onOpenCategory && onOpenCategory() },
     {
       id: 'cart',
@@ -42,10 +50,10 @@ export default function BottomNav({
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] border-t-2 border-[#0E1330] pb-safe shadow-lg">
       <div className="max-w-md mx-auto flex items-center justify-around h-15 px-2">
         {items.map((item) => {
-          const Icon = item.icon;
           const isActive = activeTab === item.id;
 
           if (item.isExternal) {
+            const Icon = item.icon;
             return (
               <a
                 key={item.id}
@@ -61,6 +69,36 @@ export default function BottomNav({
             );
           }
 
+          if (item.isLogo) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={item.action}
+                aria-label="Home"
+                className={`relative flex flex-col items-center justify-center flex-1 h-full py-1 cursor-pointer transition-colors ${
+                  isActive ? 'text-[#2436F5] font-bold' : 'text-[#0E1330] font-medium'
+                }`}
+              >
+                <div
+                  className={`p-1 rounded-full flex items-center justify-center transition-all ${
+                    isActive ? 'bg-[#2436F5] ring-2 ring-[#0E1330]' : 'bg-transparent'
+                  }`}
+                >
+                  <img
+                    src={logoSrc}
+                    alt="Extrovat Lifestyle logo"
+                    width={26}
+                    height={26}
+                    className="w-[26px] h-[26px] rounded-full object-cover border border-[#0E1330] bg-white"
+                  />
+                </div>
+                <span className="text-[10px] font-sans leading-none mt-0.5">{item.label}</span>
+              </button>
+            );
+          }
+
+          const Icon = item.icon;
           return (
             <button
               key={item.id}

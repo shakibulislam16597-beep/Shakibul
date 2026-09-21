@@ -4,116 +4,77 @@ import React, { useEffect, useState } from 'react';
  * SplashScreen Component - Extrovat Lifestyle
  *
  * Requirements:
- * - Paper background #F7F8FC
- * - "Extrovat" appears letter by letter sliding up with short stagger
- * - Sun-yellow dot pops in after letters
- * - "Lifestyle" fades in below
- * - Total duration ~1.8 seconds then auto-navigate to Home
- * - Supports prefers-reduced-motion (instant display)
+ * - Logo centered (~180px wide) on app background (#F7F8FC).
+ * - Gentle fade and scale-in, held about 1.8 seconds, then go to Home.
+ * - Respect prefers-reduced-motion (show without animation).
+ * - If image fails to load or anything throws, skip splash so app never stays blank.
+ * - Logo URL: import.meta.env.BASE_URL + "extrovat-logo.png"
+ * - Attributes: width={180}, height={180}, alt="Extrovat Lifestyle logo".
  */
 export default function SplashScreen({ onFinish }) {
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
 
   useEffect(() => {
-    // Check prefers-reduced-motion media query
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mediaQuery.matches) {
-      setIsReducedMotion(true);
-      const timer = setTimeout(() => {
-        if (onFinish) onFinish();
-      }, 500);
-      return () => clearTimeout(timer);
+    let timer;
+    try {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (mediaQuery && mediaQuery.matches) {
+        setIsReducedMotion(true);
+      }
+    } catch (e) {
+      console.warn('Error reading prefers-reduced-motion:', e);
     }
 
-    const timer = setTimeout(() => {
+    try {
+      timer = setTimeout(() => {
+        if (onFinish) onFinish();
+      }, 1800);
+    } catch (e) {
+      console.warn('SplashScreen timer error:', e);
       if (onFinish) onFinish();
-    }, 1800);
+    }
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [onFinish]);
 
-  const brandLetters = 'Extrovat'.split('');
+  const handleImageError = () => {
+    console.warn('Splash logo failed to load, skipping splash');
+    if (onFinish) onFinish();
+  };
 
   return (
     <div
       role="region"
       aria-label="App opening splash screen"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F7F8FC] text-[#0E1330] p-6 selection:bg-[#2436F5] selection:text-white"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#F7F8FC] p-6 selection:bg-[#2436F5] selection:text-white"
     >
-      <div className="flex flex-col items-center text-center select-none">
-        {/* Main Wordmark Container */}
-        <div className="flex items-baseline justify-center overflow-hidden">
-          {brandLetters.map((letter, idx) => (
-            <span
-              key={idx}
-              style={{
-                animationDelay: isReducedMotion ? '0s' : `${idx * 0.06}s`
-              }}
-              className={`font-heading text-5xl sm:text-6xl font-extrabold tracking-tight text-[#0E1330] inline-block ${
-                isReducedMotion
-                  ? 'opacity-100 transform-none'
-                  : 'animate-[slideUp_0.5s_cubic-bezier(0.16,1,0.3,1)_both]'
-              }`}
-            >
-              {letter}
-            </span>
-          ))}
-
-          {/* Sun-yellow dot */}
-          <span
-            style={{
-              animationDelay: isReducedMotion ? '0s' : '0.55s'
-            }}
-            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#FFC933] border border-[#0E1330] ml-1 inline-block ${
-              isReducedMotion
-                ? 'opacity-100 transform-none'
-                : 'animate-[popIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)_both]'
-            }`}
-          />
-        </div>
-
-        {/* Subtitle "Lifestyle" */}
-        <p
-          style={{
-            animationDelay: isReducedMotion ? '0s' : '0.85s'
-          }}
-          className={`mt-2 text-sm sm:text-base font-medium tracking-widest text-[#5B6079] ${
+      <div className="flex flex-col items-center justify-center text-center select-none">
+        <img
+          src={logoSrc}
+          alt="Extrovat Lifestyle logo"
+          width={180}
+          height={180}
+          onError={handleImageError}
+          className={`w-[180px] h-[180px] object-contain ${
             isReducedMotion
-              ? 'opacity-100'
-              : 'animate-[fadeIn_0.5s_ease-out_both]'
+              ? 'opacity-100 transform-none'
+              : 'animate-[fadeScaleIn_0.7s_cubic-bezier(0.16,1,0.3,1)_both]'
           }`}
-        >
-          Lifestyle
-        </p>
+        />
       </div>
 
       <style>{`
-        @keyframes slideUp {
+        @keyframes fadeScaleIn {
           0% {
             opacity: 0;
-            transform: translateY(30px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes popIn {
-          0% {
-            opacity: 0;
-            transform: scale(0);
+            transform: scale(0.92);
           }
           100% {
             opacity: 1;
             transform: scale(1);
-          }
-        }
-        @keyframes fadeIn {
-          0% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 1;
           }
         }
       `}</style>

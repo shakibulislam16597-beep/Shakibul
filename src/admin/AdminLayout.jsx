@@ -237,14 +237,20 @@ export default function AdminLayout({ currentHash, user }) {
     return <ComingSoon pageTitle={activeTitle} />;
   };
 
+  const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
+
   const renderSidebarContent = () => (
     <div className="flex flex-col h-full bg-[#FFFFFF] border-r-2 border-[#0E1330] text-[#0E1330] select-none">
       {/* Sidebar Header */}
       <div className="p-4 border-b-2 border-[#0E1330] bg-[#F7F8FC] flex items-center justify-between">
         <a href="#/admin/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#FFC933] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] flex items-center justify-center font-heading font-black text-sm">
-            E
-          </div>
+          <img
+            src={logoSrc}
+            alt="Extrovat Lifestyle logo"
+            width={36}
+            height={36}
+            className="w-[36px] h-[36px] rounded-full border-2 border-[#0E1330] object-cover bg-white shrink-0"
+          />
           <div>
             <h2 className="text-sm font-heading font-extrabold uppercase tracking-wider text-[#0E1330]">
               Extrovat Admin
@@ -370,15 +376,22 @@ export default function AdminLayout({ currentHash, user }) {
     <div className="min-h-screen bg-[#F7F8FC] text-[#0E1330] font-sans flex flex-col lg:flex-row">
       {/* Mobile Top Header Bar */}
       <header className="lg:hidden sticky top-0 z-40 bg-[#FFFFFF] border-b-2 border-[#0E1330] px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Open sidebar menu"
-            className="p-2 bg-[#F7F8FC] rounded-xl border-2 border-[#0E1330] text-[#0E1330] hover:bg-[#FFC933] transition-colors cursor-pointer"
+            className="p-1.5 bg-[#F7F8FC] rounded-xl border-2 border-[#0E1330] text-[#0E1330] hover:bg-[#FFC933] transition-colors cursor-pointer"
           >
             <Menu className="w-5 h-5" />
           </button>
+          <img
+            src={logoSrc}
+            alt="Extrovat Lifestyle logo"
+            width={36}
+            height={36}
+            className="w-[36px] h-[36px] rounded-full border-2 border-[#0E1330] object-cover bg-white shrink-0"
+          />
           <span className="font-heading font-extrabold text-sm uppercase tracking-wider text-[#0E1330]">
             Extrovat Admin
           </span>
