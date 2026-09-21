@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import SearchBar from './SearchBar';
-import HeroBanner from './HeroBanner';
+import CategoryGrid from './CategoryGrid';
+import BannerStrip from './BannerStrip';
+import FlashSaleStrip from './FlashSaleStrip';
 import ProductCard from './ProductCard';
 import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
@@ -9,7 +11,6 @@ import CartDrawer from './CartDrawer';
 import CheckoutModal from './CheckoutModal';
 import OrderSuccessModal from './OrderSuccessModal';
 import WhatsAppBanner from './WhatsAppBanner';
-import FlashSaleStrip from './FlashSaleStrip';
 import FilterSheet from './FilterSheet';
 import QuickViewModal from './QuickViewModal';
 import RecentlyViewed from './RecentlyViewed';
@@ -24,6 +25,13 @@ import { X, ArrowLeft, Grid, LogIn, ArrowUp, SlidersHorizontal } from 'lucide-re
 
 /**
  * Home Component - Extrovat Lifestyle
+ *
+ * Page Component Order:
+ * 1. Header and Search
+ * 2. CategoryGrid
+ * 3. BannerStrip
+ * 4. Flash sale strip
+ * 5. Product grid
  */
 export default function Home({ onResetSplash, isAdmin = false }) {
   const [storefrontProducts, setStorefrontProducts] = useState(MOCK_PRODUCTS);
@@ -45,9 +53,10 @@ export default function Home({ onResetSplash, isAdmin = false }) {
   const maxPrice = 20000;
   const [priceRange, setPriceRange] = useState(maxPrice);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [activeTileSlug, setActiveTileSlug] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
 
-  // Updated Category Names
+  // Standard Category Names
   const categoriesList = [
     'Attar',
     'Perfume',
@@ -144,12 +153,22 @@ export default function Home({ onResetSplash, isAdmin = false }) {
   const applyFiltersAndSort = (productList) => {
     let filtered = productList.filter((p) => {
       const matchesPrice = p.price <= priceRange;
-      const matchesCat =
-        selectedCategories.length === 0 || selectedCategories.includes(p.category);
-      // Special logic for "Under ৳999" category filter option
-      if (selectedCategories.includes('Under ৳999') && p.price >= 1000) {
-        return false;
+
+      // Active category filter logic
+      let matchesCat = true;
+
+      if (activeTileSlug === 'offers') {
+        matchesCat = Boolean(p.oldPrice && p.oldPrice > p.price);
+      } else if (activeTileSlug === 'under-999' || selectedCategories.includes('Under ৳999')) {
+        matchesCat = p.price <= 999;
+      } else if (activeTileSlug === 'new-arrivals') {
+        matchesCat = p.badge?.toLowerCase().includes('new') || p.badge?.toLowerCase().includes('off');
+      } else if (activeTileSlug === 'best-sellers') {
+        matchesCat = p.badge?.toLowerCase().includes('best') || p.rating >= 4.8;
+      } else if (selectedCategories.length > 0) {
+        matchesCat = selectedCategories.includes(p.category);
       }
+
       return matchesPrice && matchesCat;
     });
 
@@ -164,15 +183,67 @@ export default function Home({ onResetSplash, isAdmin = false }) {
     return filtered;
   };
 
+  const scrollToProductGrid = () => {
+    const gridElem = document.getElementById('products-grid-section');
+    if (gridElem) {
+      gridElem.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectCategoryTile = (tile) => {
+    setActiveTileSlug(tile.slug);
+    if (tile.filterType === 'all') {
+      setSelectedCategories([]);
+    } else if (tile.filterType === 'category') {
+      setSelectedCategories([tile.categoryKey]);
+    } else if (tile.filterType === 'under999') {
+      setSelectedCategories(['Under ৳999']);
+    } else {
+      setSelectedCategories([]);
+    }
+    scrollToProductGrid();
+  };
+
+  const handleBannerAction = (action) => {
+    if (!action) return;
+
+    if (action.type === 'category') {
+      const matchTile = sections.find((s) => s.categoryKey.toLowerCase() === action.value.toLowerCase());
+      if (matchTile) {
+        setSelectedCategories([matchTile.categoryKey]);
+        setActiveTileSlug(matchTile.id);
+      } else {
+        setSelectedCategories([action.value]);
+      }
+      scrollToProductGrid();
+    } else if (action.type === 'offers') {
+      setActiveTileSlug('offers');
+      setSelectedCategories([]);
+      scrollToProductGrid();
+    } else if (action.type === 'link' && action.value) {
+      window.location.hash = action.value;
+    }
+  };
+
   const handleToggleCategory = (cat) => {
-    setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-    );
+    setSelectedCategories((prev) => {
+      const updated = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
+      if (updated.length === 1) {
+        const slugMatch = updated[0].toLowerCase().replace(/\s+/g, '-').replace('&', 'and');
+        setActiveTileSlug(slugMatch);
+      } else if (updated.length === 0) {
+        setActiveTileSlug('all');
+      } else {
+        setActiveTileSlug('custom');
+      }
+      return updated;
+    });
   };
 
   const handleResetFilters = () => {
     setPriceRange(maxPrice);
     setSelectedCategories([]);
+    setActiveTileSlug('all');
     setSortBy('popular');
   };
 
@@ -254,10 +325,13 @@ export default function Home({ onResetSplash, isAdmin = false }) {
       {/* Install Prompt for PWA */}
       <InstallPrompt />
 
-      {/* Header */}
+      {/* 1. Header */}
       <Header
         cartCount={cartCount}
-        onLogoClick={() => setActiveSearchTerm(null)}
+        onLogoClick={() => {
+          setActiveSearchTerm(null);
+          handleResetFilters();
+        }}
         onCartClick={() => setIsCartOpen(true)}
         onToggleSearch={() => setIsSearchOpen((prev) => !prev)}
         isSearchOpen={isSearchOpen}
@@ -380,8 +454,9 @@ export default function Home({ onResetSplash, isAdmin = false }) {
                     type="button"
                     onClick={() => {
                       setIsCategoryModalOpen(false);
-                      const elem = document.getElementById(sec.id);
-                      if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                      setSelectedCategories([sec.categoryKey]);
+                      setActiveTileSlug(sec.id);
+                      scrollToProductGrid();
                     }}
                     className="w-full text-left py-3 px-4 rounded-xl bg-[#F7F8FC] hover:bg-[#FFC933] font-heading font-bold text-xs uppercase tracking-wider text-[#0E1330] transition-colors flex items-center justify-between cursor-pointer border-2 border-[#0E1330]"
                   >
@@ -495,73 +570,80 @@ export default function Home({ onResetSplash, isAdmin = false }) {
         ) : (
           /* Normal Home Page View */
           <>
-            {/* Hero Banner Carousel */}
-            <HeroBanner
-              onShopNowClick={() => {
-                const elem = document.getElementById('attar');
-                if (elem) elem.scrollIntoView({ behavior: 'smooth' });
-              }}
+            {/* 2. CategoryGrid */}
+            <CategoryGrid
+              activeCategory={activeTileSlug}
+              onSelectCategory={handleSelectCategoryTile}
             />
 
-            {/* Flash Sale Countdown Strip */}
+            {/* 3. BannerStrip */}
+            <BannerStrip onBannerAction={handleBannerAction} />
+
+            {/* 4. Flash Sale Strip */}
             <FlashSaleStrip
               onExploreSale={() => {
-                const elem = document.getElementById('combo-offers');
-                if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                setActiveTileSlug('combo-offers');
+                setSelectedCategories(['Combo Offers']);
+                scrollToProductGrid();
               }}
             />
 
             {/* Scent Finder Interactive Quiz */}
             <ScentFinderQuiz onAddToCart={handleAddToCart} products={storefrontProducts} />
 
-            {/* Product Category Sections */}
-            {sections.map((sec) => {
-              const categoryProducts = applyFiltersAndSort(
-                storefrontProducts.filter((p) => {
-                  if (sec.categoryKey === 'Under ৳999') return p.price < 1000;
-                  return p.category === sec.categoryKey;
-                })
-              );
+            {/* 5. Product Grid Section */}
+            <div id="products-grid-section" className="space-y-6 pt-2">
+              {/* Product Category Sections */}
+              {sections.map((sec) => {
+                const categoryProducts = applyFiltersAndSort(
+                  storefrontProducts.filter((p) => {
+                    if (sec.categoryKey === 'Under ৳999') return p.price < 1000;
+                    return p.category === sec.categoryKey;
+                  })
+                );
 
-              if (categoryProducts.length === 0) return null;
+                if (categoryProducts.length === 0) return null;
 
-              return (
-                <section key={sec.id} id={sec.id} aria-label={sec.title} className="space-y-3 pt-2">
-                  {/* Section Header Row */}
-                  <div className="flex items-center justify-between pb-2 border-b-2 border-[#0E1330]">
-                    <div className="relative">
-                      <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-[#0E1330] tracking-tight">
-                        {sec.title}
-                      </h2>
+                return (
+                  <section key={sec.id} id={sec.id} aria-label={sec.title} className="space-y-3 pt-2">
+                    {/* Section Header Row */}
+                    <div className="flex items-center justify-between pb-2 border-b-2 border-[#0E1330]">
+                      <div className="relative">
+                        <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-[#0E1330] tracking-tight">
+                          {sec.title}
+                        </h2>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategories([sec.categoryKey]);
+                          const slugMatch = sec.categoryKey.toLowerCase().replace(/\s+/g, '-').replace('&', 'and');
+                          setActiveTileSlug(slugMatch);
+                          setIsFilterOpen(true);
+                        }}
+                        className="px-4 py-1.5 bg-[#FFFFFF] text-[#0E1330] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] font-heading font-bold text-xs rounded-full transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
+                      >
+                        See all
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategories([sec.categoryKey]);
-                        setIsFilterOpen(true);
-                      }}
-                      className="px-4 py-1.5 bg-[#FFFFFF] text-[#0E1330] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] font-heading font-bold text-xs rounded-full transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
-                    >
-                      See all
-                    </button>
-                  </div>
-
-                  {/* 2 columns on mobile product grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                    {categoryProducts.map((prod) => (
-                      <ProductCard
-                        key={prod.id}
-                        product={prod}
-                        onBuyNow={handleBuyNow}
-                        onAddToCart={handleAddToCart}
-                        onQuickView={handleQuickView}
-                      />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
+                    {/* 2 columns on mobile product grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                      {categoryProducts.map((prod) => (
+                        <ProductCard
+                          key={prod.id}
+                          product={prod}
+                          onBuyNow={handleBuyNow}
+                          onAddToCart={handleAddToCart}
+                          onQuickView={handleQuickView}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
 
             {/* Recently Viewed Horizontal Scroll */}
             <RecentlyViewed
@@ -613,7 +695,13 @@ export default function Home({ onResetSplash, isAdmin = false }) {
       {/* Fixed Bottom Navigation Bar */}
       <BottomNav
         activeTab={activeTab}
-        onTabSelect={(tab) => setActiveTab(tab)}
+        onTabSelect={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'home') {
+            handleResetFilters();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
         cartCount={cartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenCategory={() => setIsCategoryModalOpen(true)}

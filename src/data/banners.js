@@ -1,93 +1,124 @@
-import heroBannerImg from '../assets/hero-banner.jpg';
-import { WHATSAPP_NUMBER } from '../config';
+/**
+ * Banner & Marketing Data - Extrovat Lifestyle
+ */
 
-export { WHATSAPP_NUMBER };
-
-export const ANNOUNCEMENT_MESSAGES = [
-  'Free delivery on orders above ৳2000 across Bangladesh',
-  'Cash on Delivery available in all 64 districts',
-  'bKash / Nagad accepted with instant order confirmation'
-];
-
-export const HERO_SLIDES = [
+export const BANNER_SLIDES = [
   {
-    id: 'slide-1',
-    badge: 'EXTROVAT EXCLUSIVE',
-    headline: 'Discover your signature fragrance',
-    subtext: 'Premium attars, perfumes, body sprays and gift sets',
-    buttonText: 'Shop collection',
-    image: heroBannerImg,
-    alt: 'Extrovat perfume bottle display'
+    id: 'banner-1',
+    tag: 'ROYAL ATTAR',
+    title: 'Artisanal Pure Attar Oils',
+    subtitle: 'Alcohol-free organic botanical extracts',
+    badgeTop: 'UP TO',
+    badgeBottom: '30% OFF',
+    cta: 'Explore Attars',
+    action: { type: 'category', value: 'Attar' },
+    image: null,
+    bgFrom: '#FFF9E6',
+    bgTo: '#FFE399'
   },
   {
-    id: 'slide-2',
-    badge: 'SPECIAL OFFER',
-    headline: 'Festival special: Flat 20% off',
-    subtext: 'Exclusive attar collections & handcrafted lifestyle products',
-    buttonText: 'Claim offer',
-    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200',
-    alt: 'Special fragrance collection display'
+    id: 'banner-2',
+    tag: 'LUXURY PERFUMES',
+    title: 'Royal Concentrated Perfumes',
+    subtitle: 'Long lasting sillage with French accords',
+    badgeTop: 'SAVE',
+    badgeBottom: '৳500',
+    cta: 'Shop Perfumes',
+    action: { type: 'category', value: 'Perfume' },
+    image: null,
+    bgFrom: '#EEF2FF',
+    bgTo: '#C7D2FE'
   },
   {
-    id: 'slide-3',
-    badge: 'EXPRESS DELIVERY',
-    headline: 'Free delivery on orders over ৳2000',
-    subtext: 'Fast and insured delivery across all 64 districts',
-    buttonText: 'Order now',
-    image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=1200',
-    alt: 'Extrovat package box'
-  }
-];
-
-export const SCENT_QUIZ_QUESTIONS = [
-  {
-    id: 'occasion',
-    question: '1. What is your primary occasion?',
-    options: [
-      { label: 'Daily wear & office', value: 'daily' },
-      { label: 'Prayers & spiritual', value: 'prayer' },
-      { label: 'Evening events & parties', value: 'evening' },
-      { label: 'Gift for someone special', value: 'gift' }
-    ]
+    id: 'banner-3',
+    tag: 'DAILY REFRESH',
+    title: 'Ocean & Citrus Body Sprays',
+    subtitle: 'All-day freshness for every occasion',
+    badgeTop: 'UNDER',
+    badgeBottom: '৳999',
+    cta: 'View Sprays',
+    action: { type: 'category', value: 'Body spray' },
+    image: null,
+    bgFrom: '#E0F2FE',
+    bgTo: '#BAE6FD'
   },
   {
-    id: 'strength',
-    question: '2. How strong do you prefer your scent?',
-    options: [
-      { label: 'Subtle & gentle', value: 'subtle' },
-      { label: 'Moderate & balanced', value: 'moderate' },
-      { label: 'Intense & long lasting', value: 'intense' }
-    ]
+    id: 'banner-4',
+    tag: 'GIFT BOXES',
+    title: 'Royal Trio Fragrance Gift Sets',
+    subtitle: 'Elegantly packaged for loved ones',
+    badgeTop: 'FLAT',
+    badgeBottom: '৳1,000 OFF',
+    cta: 'Find Gifts',
+    action: { type: 'category', value: 'Gift sets' },
+    image: null,
+    bgFrom: '#FDF2F8',
+    bgTo: '#FBCFE8'
   },
   {
-    id: 'note',
-    question: '3. What scent note appeals to you most?',
-    options: [
-      { label: 'Floral (Rose, Jasmine)', value: 'floral' },
-      { label: 'Woody (Oud, Sandalwood)', value: 'woody' },
-      { label: 'Sweet (Musk, Amber)', value: 'sweet' },
-      { label: 'Fresh (Citrus, White Musk)', value: 'fresh' }
-    ]
+    id: 'banner-5',
+    tag: 'EXCLUSIVE PERK',
+    title: 'Free Express Shipping Nationwide',
+    subtitle: 'On all orders above ৳2,000 across Bangladesh',
+    badgeTop: 'FREE',
+    badgeBottom: 'DELIVERY',
+    cta: 'Claim Offer',
+    action: { type: 'offers', value: 'Offers' },
+    image: null,
+    bgFrom: '#FEF3C7',
+    bgTo: '#FDE68A'
   }
 ];
 
 export const FLASH_SALE_DATA = {
   badge: 'FLASH SALE',
-  title: 'Limited time deals',
-  subtext: 'Exclusive discounts on selected Extrovat fragrances',
+  title: 'Limited time offers & discounts',
+  subtext: 'Special prices on artisanal attars & perfumes',
   durationHours: 8
 };
 
-export const PROMO_BANNER_DATA = {
-  badge: 'SPECIAL PROMO',
-  title: 'Buy 2 attars, get 1 free',
-  subtext: 'Add any 3 pure attars to your cart and the lowest priced item is free',
-  buttonText: 'Shop attars'
-};
+export const WHATSAPP_NUMBER = '8801712345678';
 
 export const WHATSAPP_BANNER_DATA = {
-  title: 'Order on WhatsApp',
-  subtext: 'Prefer ordering directly or need advice? Chat with our consultants 24/7.',
-  buttonText: 'Order on WhatsApp',
-  phoneNumber: WHATSAPP_NUMBER
+  title: 'Order directly on WhatsApp',
+  subtext: 'Speak with our fragrance expert or send your order items directly to WhatsApp',
+  buttonText: 'Order via WhatsApp'
 };
+
+export const SCENT_QUIZ_QUESTIONS = [
+  {
+    id: 'note',
+    question: '1. What fragrance profile do you prefer most?',
+    options: [
+      { label: '🌿 Fresh & Marine', value: 'fresh' },
+      { label: '🌹 Floral & Sweet Rose', value: 'floral' },
+      { label: '🪵 Woody & Resinous Oud', value: 'woody' },
+      { label: '🍯 Sweet & Warm Amber', value: 'sweet' }
+    ]
+  },
+  {
+    id: 'strength',
+    question: '2. How subtle or intense should the scent be?',
+    options: [
+      { label: 'Subtle & Close to skin', value: 'subtle' },
+      { label: 'Moderate all-day presence', value: 'moderate' },
+      { label: 'Intense sillage & projection', value: 'intense' }
+    ]
+  },
+  {
+    id: 'occasion',
+    question: '3. When will you wear this fragrance?',
+    options: [
+      { label: 'Daily wear & work', value: 'daily' },
+      { label: 'Special events & evening', value: 'evening' },
+      { label: 'Prayers & spiritual gatherings', value: 'prayer' },
+      { label: 'Gift for someone special', value: 'gift' }
+    ]
+  }
+];
+
+export const ANNOUNCEMENT_MESSAGES = [
+  '🚚 Free delivery on orders above ৳2000 across Bangladesh',
+  '✨ 100% Alcohol-Free Organic Attar & Perfume Oils',
+  '🎁 Special Gift Packaging Available on All Orders'
+];
