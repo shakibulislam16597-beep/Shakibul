@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { formatBDT } from '../utils/currency';
 import { validateCoupon } from '../data/coupons';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, Check, AlertCircle } from 'lucide-react';
 
 /**
@@ -29,23 +31,48 @@ export default function CartDrawer({
 
   const finalTotalBDT = itemsSubtotalBDT - discountAmountBDT;
 
-  const handleApplyCoupon = (e) => {
+  const handleApplyCoupon = async (e) => {
     e.preventDefault();
     setCouponError('');
 
-    if (!couponCode.trim()) {
+    const cleanCode = couponCode.trim().toUpperCase();
+    if (!cleanCode) {
       setCouponError('Please enter a coupon code');
       return;
     }
 
-    const matched = validateCoupon(couponCode);
+    // 1. Try local coupons first
+    const matched = validateCoupon(cleanCode);
     if (matched) {
       setAppliedCoupon(matched);
       setCouponError('');
-    } else {
-      setAppliedCoupon(null);
-      setCouponError('Invalid coupon code. Try EID20 or WELCOME10');
+      return;
     }
+
+    // 2. Try Firestore getDoc by coupon code (no list query)
+    if (db) {
+      try {
+        const couponDocRef = doc(db, 'coupons', cleanCode);
+        const couponDocSnap = await getDoc(couponDocRef);
+
+        if (couponDocSnap.exists()) {
+          const couponData = couponDocSnap.data();
+          if (couponData.active !== false) {
+            setAppliedCoupon({
+              code: cleanCode,
+              discountPercent: couponData.discountPercent || couponData.discount || 10
+            });
+            setCouponError('');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Coupon Firestore getDoc error:', err);
+      }
+    }
+
+    setAppliedCoupon(null);
+    setCouponError('Invalid coupon code. Try EID20 or WELCOME10');
   };
 
   const handleRemoveCoupon = () => {
