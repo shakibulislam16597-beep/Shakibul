@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  signOut
+} from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
+import { ensureUserProfile, getUserProfile } from './lib/userAuth';
+import { safeGetItem, safeRemoveItem } from './utils/storage';
 
 import SplashScreen from './components/SplashScreen';
 import Home from './components/Home';
 import TrackOrder from './components/TrackOrder';
+import AccountPages from './components/AccountPages';
 import AdminLogin from './admin/AdminLogin';
 import AdminLayout from './admin/AdminLayout';
 
@@ -21,8 +29,39 @@ export default function App() {
   });
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [isAdminActive, setIsAdminActive] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
+
+  // Check email link sign-in on app start
+  useEffect(() => {
+    if (!auth) return;
+
+    const completeEmailLinkSignIn = async () => {
+      try {
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+          let email = safeGetItem('emailForSignIn', '');
+          if (!email) {
+            email = window.prompt('Please confirm your email address for sign-in:');
+          }
+          if (email) {
+            const result = await signInWithEmailLink(auth, email, window.location.href);
+            safeRemoveItem('emailForSignIn');
+            if (result?.user) {
+              await ensureUserProfile(result.user);
+            }
+          }
+          // Clean URL query params while keeping HashRouter hash
+          const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      } catch (err) {
+        console.warn('Error completing email link sign in:', err);
+      }
+    };
+
+    completeEmailLinkSignIn();
+  }, []);
 
   // Hash listener for HashRouter navigation
   useEffect(() => {
@@ -50,6 +89,11 @@ export default function App() {
           setUser(currentUser);
           if (currentUser) {
             try {
+              // Ensure customer profile in users/{uid}
+              const profile = await ensureUserProfile(currentUser);
+              setUserProfile(profile);
+
+              // Check if active admin
               const adminDocRef = doc(db, 'admins', currentUser.uid);
               const adminDocSnap = await getDoc(adminDocRef);
               if (adminDocSnap.exists() && adminDocSnap.data()?.active === true) {
@@ -58,10 +102,11 @@ export default function App() {
                 setIsAdminActive(false);
               }
             } catch (e) {
-              console.warn('Error verifying admin status:', e);
+              console.warn('Error verifying admin/user status:', e);
               setIsAdminActive(false);
             }
           } else {
+            setUserProfile(null);
             setIsAdminActive(false);
           }
           setAuthChecking(false);
@@ -115,12 +160,30 @@ export default function App() {
     );
   }
 
+  const isAccountRoute = currentHash.startsWith('#/account');
+  if (isAccountRoute) {
+    if (!user) {
+      // If unauthenticated on account route, redirect to home
+      window.location.hash = '#/';
+    }
+    return (
+      <div className="min-h-screen bg-white text-gray-900 selection:bg-black selection:text-white font-sans">
+        <AccountPages
+          currentHash={currentHash}
+          user={user}
+          userProfile={userProfile}
+          onOpenCart={() => { window.location.hash = '#/'; }}
+        />
+      </div>
+    );
+  }
+
   // Determine if navigating to admin route
   const isAdminRoute = currentHash.startsWith('#/admin');
 
   if (isAdminRoute) {
     if (currentHash === '#/admin/login') {
-      return <AdminLogin />;
+      return <AdminLogin user={user} isAdminActive={isAdminActive} />;
     }
 
     // Protected Admin Routes
@@ -144,13 +207,31 @@ export default function App() {
     return <AdminLayout currentHash={currentHash} user={user} />;
   }
 
+  const handleCustomerLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setUserProfile(null);
+      setIsAdminActive(false);
+      window.location.hash = '#/';
+    } catch (err) {
+      console.warn('Logout error:', err);
+    }
+  };
+
   // Storefront view
   return (
     <div className="min-h-screen bg-white text-gray-900 selection:bg-black selection:text-white font-sans">
       {showSplash ? (
         <SplashScreen onFinish={handleSplashFinish} />
       ) : (
-        <Home onResetSplash={handleResetSplash} isAdmin={user && isAdminActive} />
+        <Home
+          onResetSplash={handleResetSplash}
+          isAdmin={user && isAdminActive}
+          user={user}
+          userProfile={userProfile}
+          onLogout={handleCustomerLogout}
+        />
       )}
     </div>
   );

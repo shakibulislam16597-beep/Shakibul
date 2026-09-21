@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { safeGetItem, safeSetItem } from '../utils/storage';
 import { ShoppingBag, Eye, Heart } from 'lucide-react';
 import { formatBDT } from '../utils/currency';
 
@@ -13,10 +16,60 @@ import { formatBDT } from '../utils/currency';
  * - Price row (bold BDT price in ink, old price muted crossed out)
  * - Buy Now button: primary ultramarine with white text, full width, rounded pill
  */
-export default function ProductCard({ product, onBuyNow, onAddToCart, onQuickView }) {
+export default function ProductCard({
+  product,
+  onBuyNow,
+  onAddToCart,
+  onQuickView,
+  user = null,
+  userProfile = null
+}) {
   const [isLiked, setIsLiked] = useState(false);
 
+  // Sync initial liked state from userProfile wishlist or localStorage
+  useEffect(() => {
+    if (!product?.id) return;
+    if (user && userProfile?.wishlist) {
+      setIsLiked(userProfile.wishlist.includes(String(product.id)) || userProfile.wishlist.includes(Number(product.id)));
+    } else {
+      const localWish = safeGetItem('extrovat_wishlist', []);
+      setIsLiked(localWish.includes(product.id));
+    }
+  }, [product, user, userProfile]);
+
   if (!product) return null;
+
+  const handleToggleWishlist = async (e) => {
+    e.stopPropagation();
+    const nextState = !isLiked;
+    setIsLiked(nextState);
+
+    if (user && db) {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        if (nextState) {
+          await updateDoc(userRef, {
+            wishlist: arrayUnion(String(product.id))
+          });
+        } else {
+          await updateDoc(userRef, {
+            wishlist: arrayRemove(String(product.id))
+          });
+        }
+      } catch (err) {
+        console.warn('Error syncing wishlist to Firestore:', err);
+      }
+    } else {
+      const localWish = safeGetItem('extrovat_wishlist', []);
+      let updated = [];
+      if (nextState) {
+        updated = [...localWish, product.id];
+      } else {
+        updated = localWish.filter((id) => id !== product.id);
+      }
+      safeSetItem('extrovat_wishlist', updated);
+    }
+  };
 
   return (
     <div className="bg-[#FFFFFF] border-2 border-[#0E1330] rounded-[20px] p-3 flex flex-col justify-between shadow-[4px_4px_0px_#0E1330] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all duration-150 group relative">
@@ -47,10 +100,7 @@ export default function ProductCard({ product, onBuyNow, onAddToCart, onQuickVie
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1.5">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsLiked((prev) => !prev);
-            }}
+            onClick={handleToggleWishlist}
             aria-label={`Add ${product.title} to wishlist`}
             className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FFFFFF] border-2 border-[#0E1330] flex items-center justify-center transition-transform active:scale-90 cursor-pointer shadow-[1px_1px_0px_#0E1330] ${
               isLiked ? 'text-rose-600 fill-rose-600' : 'text-[#0E1330]'

@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { Menu, Search, ShoppingBag, X, Package, Phone, Lock, ShieldCheck, MessageCircle } from 'lucide-react';
+import {
+  Menu,
+  Search,
+  ShoppingBag,
+  X,
+  Package,
+  Phone,
+  Lock,
+  ShieldCheck,
+  MessageCircle,
+  User,
+  LogOut,
+  Heart,
+  ChevronDown
+} from 'lucide-react';
 import AnnouncementBar from './AnnouncementBar';
 import { WHATSAPP_NUMBER } from '../config';
 
@@ -21,10 +35,19 @@ export default function Header({
   onToggleSearch,
   isSearchOpen,
   onOpenTrackOrder,
-  isAdmin = false
+  isAdmin = false,
+  user = null,
+  userProfile = null,
+  onOpenLogin,
+  onLogout
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const logoSrc = import.meta.env.BASE_URL + 'extrovat-logo.png';
+
+  const avatarSrc = userProfile?.photoURL || user?.photoURL;
+  const displayName = userProfile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Account';
+  const initialLetter = displayName.charAt(0).toUpperCase();
 
   const categories = [
     'Attar',
@@ -113,6 +136,95 @@ export default function Header({
                 </span>
               )}
             </button>
+
+            {/* Person Icon / User Avatar Dropdown Entry */}
+            <div className="relative shrink-0">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
+                  aria-label="User account menu"
+                  className="p-1 sm:p-1.5 rounded-xl border-2 border-[#0E1330] bg-[#FFFFFF] flex items-center gap-1 hover:bg-[#FFC933] transition-all cursor-pointer shadow-[2px_2px_0px_#0E1330]"
+                >
+                  {avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt={displayName}
+                      referrerPolicy="no-referrer"
+                      className="w-7 h-7 rounded-full object-cover border border-[#0E1330]"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-[#2436F5] text-white flex items-center justify-center font-heading font-extrabold text-xs">
+                      {initialLetter}
+                    </div>
+                  )}
+                  <ChevronDown className="w-3.5 h-3.5 text-[#0E1330]" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenLogin}
+                  aria-label="Log in"
+                  className="p-1.5 sm:p-2 rounded-xl border-2 border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330] transition-all cursor-pointer"
+                >
+                  <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+              )}
+
+              {/* Customer Account Dropdown Menu */}
+              {user && isAccountDropdownOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-48 bg-[#FFFFFF] border-2 border-[#0E1330] rounded-2xl shadow-[4px_4px_0px_#0E1330] py-2 z-50 animate-in fade-in zoom-in-95 font-sans text-xs text-[#0E1330]"
+                  onMouseLeave={() => setIsAccountDropdownOpen(false)}
+                >
+                  <div className="px-3 py-2 border-b-2 border-[#0E1330]/10 font-heading">
+                    <p className="font-extrabold text-[#0E1330] truncate">{displayName}</p>
+                    <p className="text-[10px] text-[#5B6079] font-sans truncate">{user.email}</p>
+                  </div>
+
+                  <a
+                    href="#/account"
+                    onClick={() => setIsAccountDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 font-bold hover:bg-[#F7F8FC] transition-colors"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#2436F5]" />
+                    <span>My Account</span>
+                  </a>
+
+                  <a
+                    href="#/account/orders"
+                    onClick={() => setIsAccountDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 font-bold hover:bg-[#F7F8FC] transition-colors"
+                  >
+                    <Package className="w-3.5 h-3.5 text-[#2436F5]" />
+                    <span>My Orders</span>
+                  </a>
+
+                  <a
+                    href="#/account/saved"
+                    onClick={() => setIsAccountDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 font-bold hover:bg-[#F7F8FC] transition-colors"
+                  >
+                    <Heart className="w-3.5 h-3.5 text-[#2436F5]" />
+                    <span>Saved Items</span>
+                  </a>
+
+                  <div className="border-t border-[#0E1330]/10 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAccountDropdownOpen(false);
+                      if (onLogout) onLogout();
+                    }}
+                    className="w-full text-left flex items-center gap-2 px-3 py-2 font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
