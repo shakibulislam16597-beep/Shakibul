@@ -5,6 +5,7 @@ import { auth, db } from './lib/firebase';
 
 import SplashScreen from './components/SplashScreen';
 import Home from './components/Home';
+import TrackOrder from './components/TrackOrder';
 import AdminLogin from './admin/AdminLogin';
 import AdminLayout from './admin/AdminLayout';
 
@@ -103,6 +104,16 @@ export default function App() {
     }
     setShowSplash(true);
   };
+
+  // Route handling
+  const isTrackRoute = currentHash.startsWith('#/track');
+  if (isTrackRoute) {
+    return (
+      <div className="min-h-screen bg-white text-gray-900 selection:bg-black selection:text-white font-sans">
+        <TrackOrder onOpenCart={() => { window.location.hash = '#/'; }} />
+      </div>
+    );
+  }
 
   // Determine if navigating to admin route
   const isAdminRoute = currentHash.startsWith('#/admin');

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 import AdminDashboard from './AdminDashboard';
 import AllProducts from './AllProducts';
 import ProductForm from './ProductForm';
 import CategoriesManager from './CategoriesManager';
 import BrandsManager from './BrandsManager';
 import ReviewsManager from './ReviewsManager';
+import AdminOrders from './AdminOrders';
 import ComingSoon from './ComingSoon';
 
 import {
@@ -35,6 +37,7 @@ import {
 
 export default function AdminLayout({ currentHash, user }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [expandedGroups, setExpandedGroups] = useState({
     products: true,
     orders: false,
@@ -43,6 +46,27 @@ export default function AdminLayout({ currentHash, user }) {
     staff: false,
     security: false
   });
+
+  // Fetch pending count once on load for sidebar badge
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPendingBadge = async () => {
+      if (!db) return;
+      try {
+        const q = query(collection(db, 'orders'), where('status', '==', 'pending'), limit(100));
+        const snap = await getDocs(q);
+        if (isMounted) {
+          setPendingCount(snap.size);
+        }
+      } catch (err) {
+        console.warn('Sidebar pending badge fetch failed:', err);
+      }
+    };
+    fetchPendingBadge();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const toggleGroup = (groupKey) => {
     setExpandedGroups((prev) => ({
@@ -220,6 +244,18 @@ export default function AdminLayout({ currentHash, user }) {
       return <ReviewsManager />;
     }
 
+    if (currentHash.startsWith('#/admin/orders')) {
+      let initialTab = 'all';
+      if (currentHash.includes('/pending')) initialTab = 'pending';
+      else if (currentHash.includes('/processing')) initialTab = 'processing';
+      else if (currentHash.includes('/shipped')) initialTab = 'shipped';
+      else if (currentHash.includes('/delivered')) initialTab = 'delivered';
+      else if (currentHash.includes('/cancelled')) initialTab = 'cancelled';
+      else if (currentHash.includes('/returns')) initialTab = 'returned';
+
+      return <AdminOrders initialTab={initialTab} />;
+    }
+
     // Find title match from nav groups
     let activeTitle = 'Admin Portal';
     navGroups.forEach((group) => {
@@ -309,6 +345,11 @@ export default function AdminLayout({ currentHash, user }) {
                   <div className="flex items-center gap-2.5">
                     <Icon className="w-4 h-4 text-[#5B6079]" />
                     <span>{group.label}</span>
+                    {group.key === 'orders' && pendingCount > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-[#FFC933] text-[#0E1330] border border-[#0E1330]">
+                        {pendingCount}
+                      </span>
+                    )}
                   </div>
                   {isExpanded ? (
                     <ChevronDown className="w-3.5 h-3.5 text-[#5B6079]" />
@@ -326,13 +367,18 @@ export default function AdminLayout({ currentHash, user }) {
                           key={sIdx}
                           href={sub.hash}
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`block px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-colors cursor-pointer ${
+                          className={`flex items-center justify-between px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-colors cursor-pointer ${
                             isSubActive
                               ? 'bg-[#2436F5] text-[#FFFFFF] border-[#0E1330]'
                               : 'border-transparent text-[#5B6079] hover:text-[#0E1330] hover:bg-[#F7F8FC]'
                           }`}
                         >
-                          {sub.label}
+                          <span>{sub.label}</span>
+                          {sub.label === 'Pending' && pendingCount > 0 && (
+                            <span className="px-1.5 py-0.1 rounded-full text-[9px] font-extrabold bg-[#FFC933] text-[#0E1330] border border-[#0E1330]">
+                              {pendingCount}
+                            </span>
+                          )}
                         </a>
                       );
                     })}

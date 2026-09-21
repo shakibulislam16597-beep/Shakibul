@@ -167,17 +167,14 @@ export default function Header({
                   return (
                     <div key={idx}>
                       {cat === 'Track Order' ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsMenuOpen(false);
-                            if (onOpenTrackOrder) onOpenTrackOrder();
-                          }}
+                        <a
+                          href="#/track"
+                          onClick={() => setIsMenuOpen(false)}
                           className="w-full flex items-center justify-between px-3 py-3 rounded-xl font-heading text-xl font-bold text-[#0E1330] hover:bg-[#FFFFFF] hover:border-2 hover:border-[#0E1330] transition-all text-left cursor-pointer"
                         >
                           <span>{cat}</span>
                           <Package className="w-4 h-4 text-[#2436F5]" />
-                        </button>
+                        </a>
                       ) : cat === 'Contact' ? (
                         <a
                           href="tel:+8809638316596"
