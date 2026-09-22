@@ -1,29 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Plus Jakarta Sans', 'Instrument Sans Variable', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Bricolage Grotesque Variable', 'Anek Bangla Variable', sans-serif;
+  --font-sans: 'Instrument Sans Variable', 'Anek Bangla Variable', sans-serif;
   --font-bangla: 'Anek Bangla Variable', sans-serif;
 
-  --color-paper: #F8F9FA;
+  --color-paper: #F7F8FC;
   --color-surface: #FFFFFF;
   --color-ink: #0E1330;
-  --color-ultramarine: #0E1330;
+  --color-ultramarine: #2436F5;
   --color-sun: #FFC933;
   --color-gold: #C5A059;
-  --color-muted: #64748B;
+  --color-muted: #5B6079;
   --color-success: #0F9D6B;
 }
 
 :root {
-  --paper: #F8F9FA;
+  --paper: #F7F8FC;
   --surface: #FFFFFF;
   --ink: #0E1330;
-  --ultramarine: #0E1330;
+  --ultramarine: #2436F5;
   --sun: #FFC933;
   --gold: #C5A059;
-  --muted: #64748B;
+  --muted: #5B6079;
   --success: #0F9D6B;
 }
 
@@ -35,12 +34,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6, .font-heading, .font-serif {
+h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--font-heading);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-/* Elegant soft utility styles */
+/* Neo-brutalist / soft utility styles */
 .neo-box {
   background-color: #FFFFFF;
   border: 1px solid #E2E8F0;
@@ -50,17 +49,17 @@ h1, h2, h3, h4, h5, h6, .font-heading, .font-serif {
 }
 
 .neo-btn-primary {
-  background-color: #0E1330;
+  background-color: #2436F5;
   color: #FFFFFF;
   border: 1px solid #0E1330;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 0.5rem;
   transition: all 0.2s ease;
 }
 
 .neo-btn-primary:hover {
-  background-color: #1A2040;
+  background-color: #1a2bd4;
 }
 
 .neo-btn-primary:active {

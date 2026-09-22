@@ -12,6 +12,7 @@ import AdminOrders from './AdminOrders';
 import InventoryManager from './InventoryManager';
 import CustomersManager from './CustomersManager';
 import PaymentsManager from './PaymentsManager';
+import DeliveryManager from './DeliveryManager';
 import ComingSoon from './ComingSoon';
 
 import {
@@ -46,6 +47,7 @@ export default function AdminLayout({ currentHash, user }) {
     orders: false,
     inventory: false,
     payments: false,
+    delivery: false,
     staff: false,
     security: false
   });
@@ -60,6 +62,8 @@ export default function AdminLayout({ currentHash, user }) {
       setExpandedGroups((prev) => ({ ...prev, orders: true }));
     } else if (currentHash.startsWith('#/admin/payments')) {
       setExpandedGroups((prev) => ({ ...prev, payments: true }));
+    } else if (currentHash.startsWith('#/admin/delivery')) {
+      setExpandedGroups((prev) => ({ ...prev, delivery: true }));
     }
   }, [currentHash]);
 
@@ -168,10 +172,19 @@ export default function AdminLayout({ currentHash, user }) {
       hash: '#/admin/customers'
     },
     {
-      type: 'single',
+      type: 'group',
+      key: 'delivery',
       label: 'Delivery',
       icon: Truck,
-      hash: '#/admin/delivery'
+      items: [
+        { label: 'Overview', hash: '#/admin/delivery' },
+        { label: 'Delivery Orders', hash: '#/admin/delivery/orders' },
+        { label: 'Riders Directory', hash: '#/admin/delivery/riders' },
+        { label: 'Live GPS Map', hash: '#/admin/delivery/tracking' },
+        { label: 'Zones & Fees', hash: '#/admin/delivery/zones' },
+        { label: 'Settings', hash: '#/admin/delivery/settings' },
+        { label: 'Reports', hash: '#/admin/delivery/reports' }
+      ]
     },
     {
       type: 'single',
@@ -270,6 +283,10 @@ export default function AdminLayout({ currentHash, user }) {
 
     if (currentHash.startsWith('#/admin/payments')) {
       return <PaymentsManager currentHash={currentHash} user={user} />;
+    }
+
+    if (currentHash.startsWith('#/admin/delivery')) {
+      return <DeliveryManager currentHash={currentHash} user={user} />;
     }
 
     if (currentHash.startsWith('#/admin/orders')) {
