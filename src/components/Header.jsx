@@ -62,7 +62,7 @@ export default function Header({
                 <Menu className="w-6 h-6" />
               </button>
 
-              {/* Logo & Wordmark */}
+              {/* Luxury Logo & Brand Wordmark */}
               <a
                 href="#/"
                 onClick={(e) => {
@@ -70,19 +70,66 @@ export default function Header({
                     onLogoClick(e);
                   }
                 }}
-                aria-label="Extrovat Lifestyle home"
-                className="flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#FFC933] rounded-lg p-0.5 cursor-pointer group shrink-0"
+                aria-label="Extrovat Perfumes home"
+                className="flex flex-col items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#FFC933] rounded-lg px-1.5 py-0.5 cursor-pointer group shrink-0 animate-logo-entrance select-none"
               >
-                <img
-                  src={logoSrc}
-                  alt="Extrovat Lifestyle logo"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 rounded-full border border-[#0E1330] object-cover bg-white shrink-0"
-                />
-                <span className="font-heading font-extrabold text-base sm:text-lg text-[#0E1330] dark:text-white tracking-tight shrink-0">
-                  Extrovat
-                </span>
+                {/* Flame Emblem Above Wordmark */}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#2436F5] dark:text-[#FFC933] transition-colors duration-200 -mb-0.5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 2C10.5 4.5 9 7 9 9.5C9 12.5 11 14 12 15C13 14 15 12.5 15 9.5C15 7 13.5 4.5 12 2Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M12 17C8 17 5 13.8 5 10C5 7 7 4 9.5 2.5C8.5 5 8 7.5 8.5 9.5C9 11.5 10.5 13 12 13.5C13.5 13 15 11.5 15.5 9.5C16 7.5 15.5 5 14.5 2.5C17 4 19 7 19 10C19 13.8 16 17 12 17Z"
+                    fill="currentColor"
+                    opacity="0.75"
+                  />
+                </svg>
+
+                {/* Main Wordmark "EXTROVAT" */}
+                <div className="font-serif-display flex items-center text-[#0E1330] dark:text-white leading-none font-bold text-lg sm:text-xl tracking-[0.1em] brand-wordmark-shimmer">
+                  <span>EXTR</span>
+                  {/* Integrated Flame inside "O" */}
+                  <span className="relative inline-flex items-center justify-center mx-[0.5px]">
+                    <span className="opacity-0">O</span>
+                    <svg
+                      viewBox="0 0 100 100"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="absolute inset-0 w-full h-full text-current"
+                      aria-hidden="true"
+                    >
+                      <ellipse
+                        cx="50"
+                        cy="50"
+                        rx="38"
+                        ry="42"
+                        stroke="currentColor"
+                        strokeWidth="11"
+                        fill="none"
+                      />
+                      <path
+                        d="M50 24C45 35 40 43 40 52C40 59 44.5 64 50 64C55.5 64 60 59 60 52C60 43 55 35 50 24Z"
+                        fill="#2436F5"
+                        className="dark:fill-[#FFC933] transition-colors duration-200"
+                      />
+                    </svg>
+                  </span>
+                  <span>VAT</span>
+                </div>
+
+                {/* Sub-text PERFUMES & Tagline MORE THAN A SCENT */}
+                <div className="font-sans-sub flex items-center justify-between w-full text-[7.5px] sm:text-[8.5px] font-semibold text-[#0E1330]/85 dark:text-white/85 tracking-[0.18em] uppercase -mt-0.5">
+                  <span>PERFUMES</span>
+                  <span className="text-[6px] text-[#2436F5] dark:text-[#FFC933] mx-0.5">•</span>
+                  <span>MORE THAN A SCENT</span>
+                </div>
               </a>
             </div>
 

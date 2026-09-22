@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-heading: 'Cormorant Garamond', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-serif-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-sans-sub: 'Montserrat', 'Cinzel', 'Plus Jakarta Sans', sans-serif;
   --font-sans: 'Plus Jakarta Sans', 'Instrument Sans Variable', system-ui, -apple-system, sans-serif;
   --font-bangla: 'Anek Bangla Variable', sans-serif;
 
@@ -94,6 +96,70 @@ h1, h2, h3, h4, h5, h6, .font-heading, .font-serif {
 
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* Custom Brand Font Utility Classes */
+.font-serif-display {
+  font-family: var(--font-serif-display);
+}
+
+.font-sans-sub {
+  font-family: var(--font-sans-sub);
+}
+
+/* Brand Logo Entrance & Shimmer Animations */
+@keyframes logoEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes logoShimmer {
+  0% {
+    background-position: -110% 0;
+  }
+  100% {
+    background-position: 110% 0;
+  }
+}
+
+.animate-logo-entrance {
+  animation: logoEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.brand-wordmark-shimmer {
+  background-image: linear-gradient(
+    110deg,
+    currentColor 0%,
+    currentColor 42%,
+    #FFC933 50%,
+    currentColor 58%,
+    currentColor 100%
+  );
+  background-size: 220% 100%;
+  background-position: -110% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: logoShimmer 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.8s 1 forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-logo-entrance {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .brand-wordmark-shimmer {
+    animation: none !important;
+    background-image: none !important;
+    -webkit-text-fill-color: currentColor !important;
+  }
 }
 
 /* Custom scrollbar styling */
