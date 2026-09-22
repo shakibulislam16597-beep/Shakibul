@@ -32,6 +32,7 @@ import { X, ArrowLeft, Grid, ArrowUp, SlidersHorizontal } from 'lucide-react';
 
 /**
  * Home Component - Extrovat Lifestyle Storefront
+ * Premium, clean, minimal aesthetic.
  */
 export default function Home({
   onResetSplash,
@@ -343,7 +344,7 @@ export default function Home({
   const isContactRoute = currentHash.startsWith('#/contact');
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F8FC] text-[#0E1330] pb-24 selection:bg-[#2436F5] selection:text-white font-sans">
+    <div className="min-h-screen flex flex-col bg-[#F8F9FA] text-[#0E1330] pb-24 selection:bg-[#0E1330] selection:text-[#FFC933] font-sans">
       {/* Install Prompt for PWA */}
       <InstallPrompt />
 
@@ -437,19 +438,19 @@ export default function Home({
 
       {/* Category Drawer Modal */}
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0E1330]/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-[#FFFFFF] rounded-[24px] max-w-sm w-full p-6 border-2 border-[#0E1330] shadow-[4px_4px_0px_#0E1330] relative text-[#0E1330]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0E1330]/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 border border-slate-200 shadow-xl relative text-[#0E1330]">
             <button
               type="button"
               onClick={() => setIsCategoryModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl border-2 border-[#0E1330] bg-[#FFFFFF] text-[#0E1330] hover:bg-[#F7F8FC] cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:text-[#0E1330] cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-2 mb-4">
-              <Grid className="w-5 h-5 text-[#2436F5]" />
-              <h3 className="text-lg font-heading font-extrabold text-[#0E1330]">Product categories</h3>
+              <Grid className="w-5 h-5 text-[#0E1330]" />
+              <h3 className="text-lg font-serif font-bold text-[#0E1330]">Product Categories</h3>
             </div>
 
             <div className="space-y-2">
@@ -469,10 +470,10 @@ export default function Home({
                       setActiveTileSlug(sec.id);
                       scrollToProductGrid();
                     }}
-                    className="w-full text-left py-3 px-4 rounded-xl bg-[#F7F8FC] hover:bg-[#FFC933] font-heading font-bold text-xs uppercase tracking-wider text-[#0E1330] transition-colors flex items-center justify-between cursor-pointer border-2 border-[#0E1330]"
+                    className="w-full text-left py-3 px-4 rounded-xl bg-slate-50 hover:bg-[#0E1330] hover:text-white font-sans font-medium text-xs tracking-wide transition-colors flex items-center justify-between cursor-pointer border border-slate-200/80 group"
                   >
                     <span>{sec.title}</span>
-                    <span className="text-[10px] bg-[#0E1330] text-[#FFFFFF] px-2 py-0.5 rounded-full font-heading font-bold">
+                    <span className="text-[10px] bg-slate-200 group-hover:bg-[#FFC933] text-[#0E1330] px-2 py-0.5 rounded-full font-bold">
                       {count} items
                     </span>
                   </button>
@@ -484,7 +485,7 @@ export default function Home({
       )}
 
       {/* Main Content Area: Routes to specific page or Home view */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 pt-3 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 pt-3 space-y-8 sm:space-y-12">
         {isWishlistRoute ? (
           <WishlistPage
             user={user}
@@ -509,31 +510,31 @@ export default function Home({
           <ContactPage />
         ) : activeSearchTerm ? (
           /* Search Results View */
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-[#FFFFFF] p-4 rounded-[20px] border-2 border-[#0E1330] shadow-[3px_3px_0px_#0E1330]">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
               <div>
                 <button
                   type="button"
                   onClick={() => setActiveSearchTerm(null)}
-                  className="inline-flex items-center gap-1 text-xs font-heading font-bold text-[#0E1330] hover:underline mb-1 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-sans font-semibold text-slate-600 hover:text-[#0E1330] mb-1 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to store
                 </button>
-                <h2 className="text-lg sm:text-xl font-heading font-extrabold text-[#0E1330]">
+                <h2 className="text-lg sm:text-2xl font-serif font-bold text-[#0E1330]">
                   Search results for "{activeSearchTerm}"
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(true)}
-                className="px-3.5 py-2 bg-[#0E1330] text-[#FFFFFF] text-xs font-heading font-bold rounded-full border border-[#0E1330] flex items-center gap-1 cursor-pointer"
+                className="px-4 py-2 bg-[#0E1330] text-white text-xs font-sans font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-[#FFC933]" /> Filters
               </button>
             </div>
 
             {searchResults.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 {searchResults.map((prod) => (
                   <ProductCard
                     key={prod.id}
@@ -547,17 +548,17 @@ export default function Home({
                 ))}
               </div>
             ) : (
-              <div className="bg-[#FFFFFF] rounded-[20px] p-8 text-center border-2 border-[#0E1330] space-y-2">
-                <p className="text-sm font-heading font-bold text-[#0E1330]">
+              <div className="bg-white rounded-2xl p-8 text-center border border-slate-200/80 shadow-sm space-y-2">
+                <p className="text-sm font-serif font-bold text-[#0E1330]">
                   No matching products found for "{activeSearchTerm}"
                 </p>
-                <p className="text-xs font-sans text-[#5B6079]">
+                <p className="text-xs font-sans text-slate-500">
                   Try adjusting filters or search keywords.
                 </p>
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="mt-2 inline-block px-4 py-2 bg-[#2436F5] text-[#FFFFFF] border-2 border-[#0E1330] text-xs font-heading font-bold rounded-full"
+                  className="mt-2 inline-block px-4 py-2 bg-[#0E1330] text-white text-xs font-sans font-semibold rounded-lg"
                 >
                   Reset filters
                 </button>
@@ -587,7 +588,7 @@ export default function Home({
             <ScentFinderQuiz onAddToCart={handleAddToCart} products={storefrontProducts} />
 
             {/* 5. Product Grid Section */}
-            <div id="products-grid-section" className="space-y-6 pt-2">
+            <div id="products-grid-section" className="space-y-10 sm:space-y-14 pt-2">
               {/* Product Category Sections */}
               {sections.map((sec) => {
                 const categoryProducts = applyFiltersAndSort(
@@ -600,11 +601,11 @@ export default function Home({
                 if (categoryProducts.length === 0) return null;
 
                 return (
-                  <section key={sec.id} id={sec.id} aria-label={sec.title} className="space-y-3 pt-2">
+                  <section key={sec.id} id={sec.id} aria-label={sec.title} className="space-y-4">
                     {/* Section Header Row */}
-                    <div className="flex items-center justify-between pb-2 border-b-2 border-[#0E1330]">
-                      <div className="relative">
-                        <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-[#0E1330] tracking-tight">
+                    <div className="flex items-end justify-between pb-3 border-b border-slate-200/80">
+                      <div>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#0E1330] tracking-tight">
                           {sec.title}
                         </h2>
                       </div>
@@ -617,14 +618,14 @@ export default function Home({
                           setActiveTileSlug(slugMatch);
                           setIsFilterOpen(true);
                         }}
-                        className="px-4 py-1.5 bg-[#FFFFFF] text-[#0E1330] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] font-heading font-bold text-xs rounded-full transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
+                        className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-[#0E1330] border border-slate-200/80 shadow-xs font-sans font-semibold text-xs rounded-lg transition-all active:scale-95 cursor-pointer"
                       >
                         See all
                       </button>
                     </div>
 
                     {/* 2 columns on mobile product grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                       {categoryProducts.map((prod) => (
                         <ProductCard
                           key={prod.id}
@@ -657,20 +658,20 @@ export default function Home({
       </main>
 
       {/* Storefront Footer with Staff Login Link */}
-      <footer className="border-t-2 border-[#0E1330] bg-[#FFFFFF] py-6 px-4 mt-8 mb-16 text-center text-xs font-sans text-[#5B6079]">
+      <footer className="border-t border-slate-200 bg-white py-8 px-4 mt-12 mb-16 text-center text-xs font-sans text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex flex-col sm:flex-row items-center gap-2">
-            <p className="font-heading font-bold text-[#0E1330]">
+            <p className="font-serif font-semibold text-[#0E1330]">
               © {new Date().getFullYear()} Extrovat Lifestyle. All rights reserved.
             </p>
-            <span className="hidden sm:inline text-[#5B6079]">•</span>
-            <span className="text-[10px] font-mono text-[#5B6079]">
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <span className="text-[10px] font-mono text-slate-400">
               v1.0 ({typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'})
             </span>
           </div>
           <a
             href="#/admin/login"
-            className="text-[11px] font-heading font-bold text-[#5B6079] hover:text-[#2436F5] underline underline-offset-2 transition-colors cursor-pointer"
+            className="text-[11px] font-sans font-semibold text-slate-600 hover:text-[#0E1330] underline underline-offset-2 transition-colors cursor-pointer"
           >
             Staff login
           </a>
@@ -683,7 +684,7 @@ export default function Home({
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Back to top"
-          className="fixed bottom-20 left-4 z-40 p-3 bg-[#FFFFFF] text-[#0E1330] hover:bg-[#FFC933] rounded-full border-2 border-[#0E1330] shadow-[3px_3px_0px_#0E1330] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer animate-in fade-in"
+          className="fixed bottom-20 left-4 z-40 p-3 bg-white text-[#0E1330] hover:bg-slate-100 rounded-full border border-slate-200/80 shadow-md transition-all active:scale-95 cursor-pointer animate-in fade-in"
         >
           <ArrowUp className="w-5 h-5 text-[#0E1330]" />
         </button>

@@ -6,6 +6,7 @@ import { Sparkles, RotateCcw, ShoppingBag, ArrowRight, Check } from 'lucide-reac
 
 /**
  * ScentFinderQuiz Component - Extrovat Lifestyle
+ * Premium, clean fragrance recommendation quiz.
  */
 export default function ScentFinderQuiz({ onAddToCart, products = MOCK_PRODUCTS }) {
   const [answers, setAnswers] = useState({});
@@ -44,106 +45,108 @@ export default function ScentFinderQuiz({ onAddToCart, products = MOCK_PRODUCTS 
   return (
     <section
       aria-label="Interactive fragrance quiz"
-      className="w-full bg-[#FFFFFF] border-2 border-[#0E1330] rounded-[24px] p-5 shadow-[4px_4px_0px_#0E1330] my-4 text-[#0E1330]"
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b-2 border-[#0E1330] mb-4">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-[#FFC933] text-[#0E1330] border border-[#0E1330]">
-            <Sparkles className="w-4 h-4 fill-[#0E1330]" />
+      <div className="w-full bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-7 shadow-sm text-[#0E1330]">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#0E1330] text-[#FFC933]">
+              <Sparkles className="w-4 h-4 fill-[#FFC933]" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-xl font-serif font-bold text-[#0E1330]">
+                Fragrance Finder Quiz
+              </h3>
+              <p className="text-xs font-sans text-slate-500">
+                Answer 3 quick questions to discover your signature scent
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base sm:text-lg font-heading font-extrabold text-[#0E1330]">
-              Fragrance finder quiz
-            </h3>
-            <p className="text-xs font-sans text-[#5B6079]">
-              Answer 3 quick questions to discover your signature scent
-            </p>
-          </div>
+
+          {showResults && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-[#0E1330] hover:text-[#C5A059] transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Retake
+            </button>
+          )}
         </div>
 
-        {showResults && (
-          <button
-            type="button"
-            onClick={handleReset}
-            className="inline-flex items-center gap-1 text-xs font-heading font-bold text-[#2436F5] hover:underline cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" /> Retake
-          </button>
+        {!showResults ? (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between text-xs font-sans font-semibold text-slate-500">
+              <span>Question {currentStep + 1} of {SCENT_QUIZ_QUESTIONS.length}</span>
+              <span className="text-[#C5A059]">
+                {Math.round(((currentStep + 1) / SCENT_QUIZ_QUESTIONS.length) * 100)}% complete
+              </span>
+            </div>
+
+            <h4 className="text-sm sm:text-base font-serif font-semibold text-[#0E1330]">
+              {activeQuestion.question}
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {activeQuestion.options.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleSelectOption(activeQuestion.id, opt.value)}
+                  className="py-3.5 px-4 rounded-xl border border-slate-200 hover:border-[#0E1330] bg-slate-50/50 hover:bg-white text-[#0E1330] font-sans font-medium text-xs sm:text-sm transition-all text-left flex items-center justify-between cursor-pointer shadow-none hover:shadow-sm group active:scale-[0.99]"
+                >
+                  <span>{opt.label}</span>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#0E1330] transition-colors" />
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200/60 flex items-center gap-2.5">
+              <Check className="w-5 h-5 text-emerald-600 shrink-0" />
+              <p className="text-xs sm:text-sm font-sans font-semibold text-[#0E1330]">
+                Based on your answers, we recommend these signature fragrances:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {(recommendedProducts.length > 0 ? recommendedProducts : productsList.slice(0, 3)).map((prod) => (
+                <div
+                  key={prod.id}
+                  className="bg-slate-50/60 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <img
+                      src={prod.image}
+                      alt={prod.title}
+                      className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h5 className="text-xs font-serif font-bold text-[#0E1330] truncate">
+                        {prod.title}
+                      </h5>
+                      <span className="text-xs font-sans font-bold text-[#0E1330]">
+                        {formatBDT(prod.price)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onAddToCart && onAddToCart(prod)}
+                    className="w-full py-2 bg-[#0E1330] hover:bg-[#1e2550] text-white font-sans font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-sm"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-[#FFC933]" />
+                    <span>Add to cart</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
-
-      {!showResults ? (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs font-heading font-bold text-[#5B6079]">
-            <span>Question {currentStep + 1} of {SCENT_QUIZ_QUESTIONS.length}</span>
-            <span className="text-[#2436F5]">
-              {Math.round(((currentStep + 1) / SCENT_QUIZ_QUESTIONS.length) * 100)}% complete
-            </span>
-          </div>
-
-          <h4 className="text-sm sm:text-base font-heading font-extrabold text-[#0E1330]">
-            {activeQuestion.question}
-          </h4>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {activeQuestion.options.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => handleSelectOption(activeQuestion.id, opt.value)}
-                className="py-3 px-4 rounded-xl border-2 border-[#0E1330] bg-[#FFFFFF] text-[#0E1330] hover:bg-[#FFC933] font-heading font-bold text-xs transition-all text-left flex items-center justify-between cursor-pointer active:translate-x-[2px] active:translate-y-[2px]"
-              >
-                <span>{opt.label}</span>
-                <ArrowRight className="w-4 h-4 text-[#0E1330]" />
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="bg-[#FFC933]/20 p-3 rounded-xl border-2 border-[#0E1330] flex items-center gap-2">
-            <Check className="w-5 h-5 text-[#0F9D6B] shrink-0" />
-            <p className="text-xs font-heading font-bold text-[#0E1330]">
-              Based on your preferences, here are your top fragrance matches:
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {(recommendedProducts.length > 0 ? recommendedProducts : productsList.slice(0, 3)).map((prod) => (
-              <div
-                key={prod.id}
-                className="bg-[#F7F8FC] p-3 rounded-xl border-2 border-[#0E1330] flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <img
-                    src={prod.image}
-                    alt={prod.title}
-                    className="w-12 h-12 rounded-lg object-cover border border-[#0E1330]"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h5 className="text-xs font-heading font-bold text-[#0E1330] truncate">
-                      {prod.title}
-                    </h5>
-                    <span className="text-xs font-sans font-extrabold text-[#0E1330]">
-                      {formatBDT(prod.price)}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onAddToCart && onAddToCart(prod)}
-                  className="w-full py-2 bg-[#2436F5] text-[#FFFFFF] border-2 border-[#0E1330] font-heading font-bold text-[11px] uppercase rounded-full flex items-center justify-center gap-1 cursor-pointer"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5 text-[#FFFFFF]" />
-                  <span>Add to cart</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   );
 }
