@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
-import SearchBar from './SearchBar';
 import CategoryGrid from './CategoryGrid';
 import BannerStrip from './BannerStrip';
 import FlashSaleStrip from './FlashSaleStrip';
@@ -43,7 +42,6 @@ export default function Home({
 }) {
   const [storefrontProducts, setStorefrontProducts] = useState(MOCK_PRODUCTS);
   const [activeTab, setActiveTab] = useState('home');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeSearchTerm, setActiveSearchTerm] = useState(null);
 
   // Hash route tracking for inner storefront sub-pages
@@ -349,7 +347,7 @@ export default function Home({
       {/* Install Prompt for PWA */}
       <InstallPrompt />
 
-      {/* 1. Header with SideDrawer Integration */}
+      {/* 1. Header with SideDrawer & SearchBar Integration */}
       <Header
         cartCount={cartCount}
         wishlistCount={wishlistCount}
@@ -358,14 +356,14 @@ export default function Home({
           handleResetFilters();
         }}
         onCartClick={() => setIsCartOpen(true)}
-        onToggleSearch={() => setIsSearchOpen((prev) => !prev)}
-        isSearchOpen={isSearchOpen}
-        onOpenTrackOrder={() => setIsTrackOrderOpen(true)}
         isAdmin={isAdmin}
         user={user}
         userProfile={userProfile}
         onOpenLogin={() => setIsLoginModalOpen(true)}
         onLogout={onLogout}
+        onSearchSubmit={handleSearchSubmit}
+        onSelectProduct={handleSelectProduct}
+        products={storefrontProducts}
       />
 
       {/* Floating Cart Widget on Right Edge */}
@@ -374,30 +372,6 @@ export default function Home({
         totalAmount={totalCartBDT}
         onClick={() => setIsCartOpen(true)}
       />
-
-      {/* Search Bar Row */}
-      {(isSearchOpen || activeSearchTerm) && (
-        <div className="bg-[#F7F8FC] border-b-2 border-[#0E1330] py-2.5 px-4 sticky top-16 z-30 animate-in slide-in-from-top duration-200">
-          <div className="max-w-7xl mx-auto flex items-center gap-2">
-            <div className="flex-1">
-              <SearchBar
-                onSearchSubmit={handleSearchSubmit}
-                onSelectProduct={handleSelectProduct}
-                autoFocus={isSearchOpen}
-                products={storefrontProducts}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsFilterOpen(true)}
-              aria-label="Open filter options"
-              className="p-3 bg-[#0E1330] text-[#FFFFFF] hover:bg-[#2436F5] border-2 border-[#0E1330] rounded-xl transition-colors cursor-pointer shrink-0 flex items-center justify-center shadow-[2px_2px_0px_#0E1330]"
-            >
-              <SlidersHorizontal className="w-5 h-5 text-[#FFC933]" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Filter Bottom Sheet Modal */}
       <FilterSheet

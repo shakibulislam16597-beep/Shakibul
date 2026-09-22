@@ -1,7 +1,5 @@
 import React, { useRef, useState } from 'react';
 import {
-  Search,
-  ShoppingBag,
   User,
   LogOut,
   Package,
@@ -11,23 +9,25 @@ import {
 } from 'lucide-react';
 import AnnouncementBar from './AnnouncementBar';
 import SideDrawer from './SideDrawer';
+import SearchBar from './SearchBar';
 
 /**
  * Header Component - Extrovat Lifestyle
- * Rebuilt with luxury SideDrawer integration
+ * Two-row stacked sticky header layout
  */
 export default function Header({
   cartCount = 0,
   wishlistCount = 0,
   onLogoClick,
   onCartClick,
-  onToggleSearch,
-  isSearchOpen,
   isAdmin = false,
   user = null,
   userProfile = null,
   onOpenLogin,
-  onLogout
+  onLogout,
+  onSearchSubmit,
+  onSelectProduct,
+  products
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
@@ -45,85 +45,55 @@ export default function Header({
       {/* Announcement Bar */}
       <AnnouncementBar />
 
-      <header className="sticky top-0 z-40 w-full bg-[#F7F8FC] border-b-2 border-[#0E1330] transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between gap-1 sm:gap-2 overflow-hidden">
-          {/* Left: Logo Area + Hamburger */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Logo Button/Link */}
-            <a
-              href="#/"
-              onClick={(e) => {
-                if (onLogoClick) {
-                  onLogoClick(e);
-                }
-              }}
-              aria-label="Extrovat Lifestyle home"
-              className="flex items-center gap-1.5 focus:outline-none cursor-pointer group shrink-0"
-            >
-              <img
-                src={logoSrc}
-                alt="Extrovat Lifestyle logo"
-                width={42}
-                height={42}
-                className="w-[42px] h-[42px] rounded-full border-2 border-[#0E1330] object-cover bg-white shrink-0"
-              />
-              <span className="font-heading font-extrabold text-base sm:text-lg text-[#0E1330] tracking-tight shrink-0">
-                Extrovat
-              </span>
-            </a>
+      <header className="sticky top-0 z-40 w-full bg-white dark:bg-[#0E1330] border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+          {/* Row 1 (~56px height): Hamburger + Logo & Wordmark (Left) | Profile/Login (Right) */}
+          <div className="h-[56px] flex items-center justify-between gap-2 overflow-hidden">
+            {/* Left: Hamburger Button + Logo & Wordmark */}
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              {/* Hamburger Button */}
+              <button
+                ref={hamburgerRef}
+                type="button"
+                onClick={() => setIsDrawerOpen(true)}
+                aria-label="Open menu"
+                className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center text-[#0E1330] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-all cursor-pointer shrink-0 focus:outline-none focus:ring-2 focus:ring-[#FFC933]"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
 
-            {/* Hamburger Button right after logo */}
-            <button
-              ref={hamburgerRef}
-              type="button"
-              onClick={() => setIsDrawerOpen(true)}
-              aria-label="Open menu"
-              className="p-1.5 sm:p-2 text-[#0E1330] hover:bg-[#FFFFFF] rounded-xl border-2 border-transparent hover:border-[#0E1330] transition-all active:scale-95 cursor-pointer shrink-0"
-            >
-              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-          </div>
-
-          {/* Right: Search and Cart Controls */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Search Icon Toggle */}
-            <button
-              type="button"
-              onClick={onToggleSearch}
-              aria-label="Search"
-              aria-expanded={isSearchOpen}
-              className={`p-1.5 sm:p-2 rounded-xl border-2 transition-all cursor-pointer shrink-0 ${
-                isSearchOpen
-                  ? 'bg-[#FFFFFF] text-[#0E1330] border-[#0E1330] shadow-[2px_2px_0px_#0E1330]'
-                  : 'border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330]'
-              }`}
-            >
-              <Search className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-
-            {/* Cart Icon */}
-            <button
-              type="button"
-              onClick={onCartClick}
-              aria-label={`Shopping cart, ${cartCount} items`}
-              className="relative p-1.5 sm:p-2 rounded-xl border-2 border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330] transition-all cursor-pointer shrink-0"
-            >
-              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-[#FFC933] text-[#0E1330] border border-[#0E1330] text-[10px] font-heading font-extrabold rounded-full">
-                  {cartCount > 99 ? '99+' : cartCount}
+              {/* Logo & Wordmark */}
+              <a
+                href="#/"
+                onClick={(e) => {
+                  if (onLogoClick) {
+                    onLogoClick(e);
+                  }
+                }}
+                aria-label="Extrovat Lifestyle home"
+                className="flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#FFC933] rounded-lg p-0.5 cursor-pointer group shrink-0"
+              >
+                <img
+                  src={logoSrc}
+                  alt="Extrovat Lifestyle logo"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full border border-[#0E1330] object-cover bg-white shrink-0"
+                />
+                <span className="font-heading font-extrabold text-base sm:text-lg text-[#0E1330] dark:text-white tracking-tight shrink-0">
+                  Extrovat
                 </span>
-              )}
-            </button>
+              </a>
+            </div>
 
-            {/* Person Icon / User Avatar Dropdown Entry */}
+            {/* Right: Profile or Login Button */}
             <div className="relative shrink-0">
               {user ? (
                 <button
                   type="button"
                   onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
                   aria-label="User account menu"
-                  className="p-1 sm:p-1.5 rounded-xl border-2 border-[#0E1330] bg-[#FFFFFF] flex items-center gap-1 hover:bg-[#FFC933] transition-all cursor-pointer shadow-[2px_2px_0px_#0E1330]"
+                  className="min-w-[44px] min-h-[44px] px-2 py-1 rounded-xl border-2 border-[#0E1330] bg-white flex items-center gap-1 hover:bg-[#FFC933] transition-all cursor-pointer shadow-[2px_2px_0px_#0E1330] focus:outline-none focus:ring-2 focus:ring-[#FFC933]"
                 >
                   {avatarSrc ? (
                     <img
@@ -144,16 +114,16 @@ export default function Header({
                   type="button"
                   onClick={onOpenLogin}
                   aria-label="Log in"
-                  className="p-1.5 sm:p-2 rounded-xl border-2 border-transparent text-[#0E1330] hover:bg-[#FFFFFF] hover:border-[#0E1330] transition-all cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded-xl border-2 border-transparent text-[#0E1330] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 hover:border-[#0E1330] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#FFC933]"
                 >
-                  <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <User className="w-6 h-6" />
                 </button>
               )}
 
               {/* Customer Account Dropdown Menu */}
               {user && isAccountDropdownOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-48 bg-[#FFFFFF] border-2 border-[#0E1330] rounded-2xl shadow-[4px_4px_0px_#0E1330] py-2 z-50 animate-in fade-in zoom-in-95 font-sans text-xs text-[#0E1330]"
+                  className="absolute right-0 mt-2 w-48 bg-white border-2 border-[#0E1330] rounded-2xl shadow-[4px_4px_0px_#0E1330] py-2 z-50 animate-in fade-in zoom-in-95 font-sans text-xs text-[#0E1330]"
                   onMouseLeave={() => setIsAccountDropdownOpen(false)}
                 >
                   <div className="px-3 py-2 border-b-2 border-[#0E1330]/10 font-heading">
@@ -204,6 +174,15 @@ export default function Header({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Row 2 (~48px height): Full width pill Search Bar */}
+          <div className="pb-2 pt-0.5">
+            <SearchBar
+              onSearchSubmit={onSearchSubmit}
+              onSelectProduct={onSelectProduct}
+              products={products}
+            />
           </div>
         </div>
       </header>
