@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HERO_SLIDES } from '../data/banners';
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
  * HeroBanner Component - Extrovat Lifestyle
- * Requirements: 24px radius, 2px ink border, hard shadow (4px 4px 0 ink), autoplay 4 seconds,
- * round white arrow buttons with ink border, dot indicators where active dot is wider ultramarine pill.
+ * Premium, clean, minimal hero section.
+ * Single clean product image, dark rich gradient overlay, serif heading, concise subtext, single clear CTA.
  */
 export default function HeroBanner({ onShopNowClick }) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -37,7 +37,7 @@ export default function HeroBanner({ onShopNowClick }) {
 
     slideTimerRef.current = setInterval(() => {
       handleNextSlide();
-    }, 4000);
+    }, 5000);
 
     return () => {
       if (slideTimerRef.current) clearInterval(slideTimerRef.current);
@@ -74,101 +74,95 @@ export default function HeroBanner({ onShopNowClick }) {
 
   return (
     <section
-      aria-label="Hero marketing carousel"
-      className="w-full max-w-7xl mx-auto my-3 px-1"
+      aria-label="Hero marketing banner"
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <div
-        className="relative w-full overflow-hidden rounded-[24px] border-2 border-[#0E1330] shadow-[4px_4px_0px_#0E1330] bg-[#0E1330] select-none"
+        className="relative w-full overflow-hidden rounded-2xl bg-[#0E1330] shadow-lg border border-slate-800 select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative w-full aspect-[16/9] sm:aspect-[21/9]">
-          <img
-            key={slide.id}
-            src={slide.image}
-            alt={slide.alt}
-            loading="eager"
-            className="w-full h-full object-cover object-center transition-all duration-500"
-          />
-
-          {/* Dark Overlay for Text Contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0E1330]/90 via-[#0E1330]/40 to-transparent pointer-events-none" />
-
-          {/* Play / Pause Control */}
-          <div className="absolute top-3 right-3 z-20">
-            <button
-              type="button"
-              onClick={() => setIsPaused((prev) => !prev)}
-              aria-label={isPaused ? 'Play carousel autoplay' : 'Pause carousel autoplay'}
-              className="p-1.5 rounded-full bg-[#FFFFFF] border-2 border-[#0E1330] text-[#0E1330] hover:bg-[#FFC933] transition-colors cursor-pointer"
-            >
-              {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-            </button>
+        <div className="relative w-full min-h-[280px] sm:min-h-[340px] md:min-h-[400px] flex items-center">
+          {/* Main Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              key={slide.id}
+              src={slide.image}
+              alt={slide.alt}
+              loading="eager"
+              className="w-full h-full object-cover object-center transition-opacity duration-700 ease-in-out opacity-60"
+            />
+            {/* Rich gradient overlay for high text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0E1330] via-[#0E1330]/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0E1330] via-transparent to-transparent opacity-90" />
           </div>
 
-          {/* Text Content */}
-          <div className="absolute bottom-0 left-0 right-0 px-[56px] sm:px-[56px] md:px-[56px] pb-4 pt-4 sm:pb-6 md:pb-8 flex flex-col items-start z-10">
-            <span className="inline-block px-3 py-1 mb-2 rounded-full bg-[#FFC933] border border-[#0E1330] text-[10px] font-extrabold text-[#0E1330] uppercase tracking-wider">
+          {/* Promotional Badge in Corner */}
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
+            <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold tracking-wide bg-[#C5A059]/20 text-[#FFC933] border border-[#C5A059]/40 backdrop-blur-md">
               {slide.badge}
             </span>
+          </div>
 
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-heading font-extrabold text-[#FFFFFF] tracking-tight leading-tight max-w-xl">
+          {/* Content Overlay */}
+          <div className="relative z-10 w-full max-w-2xl px-5 py-8 sm:px-8 sm:py-12 md:px-12 flex flex-col items-start justify-center">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight leading-tight mb-2.5">
               {slide.headline}
             </h1>
 
-            <p className="mt-1 text-xs sm:text-sm font-sans text-gray-200 max-w-md line-clamp-2">
+            <p className="text-xs sm:text-base font-sans text-slate-300 max-w-lg mb-6 leading-relaxed">
               {slide.subtext}
             </p>
 
-            <div className="mt-3">
-              <button
-                type="button"
-                onClick={onShopNowClick}
-                aria-label={`${slide.buttonText} for ${slide.headline}`}
-                className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-[#2436F5] text-[#FFFFFF] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] font-heading font-extrabold text-xs uppercase tracking-wider transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer"
-              >
-                <span>{slide.buttonText}</span>
-                <ArrowRight className="w-4 h-4 text-[#FFFFFF]" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={onShopNowClick}
+              aria-label={`${slide.buttonText} for ${slide.headline}`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FFC933] hover:bg-[#e6b429] text-[#0E1330] font-sans font-bold text-sm tracking-wide shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#FFC933] focus:ring-offset-2 focus:ring-offset-[#0E1330]"
+            >
+              <span>{slide.buttonText}</span>
+              <ArrowRight className="w-4 h-4 text-[#0E1330]" />
+            </button>
           </div>
 
-          {/* Round White Navigation Arrow Buttons */}
-          <button
-            type="button"
-            onClick={handlePrevSlide}
-            aria-label="Previous slide"
-            className="flex absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-[#FFFFFF] text-[#0E1330] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleNextSlide}
-            aria-label="Next slide"
-            className="flex absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-[#FFFFFF] text-[#0E1330] border-2 border-[#0E1330] shadow-[2px_2px_0px_#0E1330] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {/* Minimal Arrow Navigation */}
+          <div className="hidden sm:flex absolute right-4 bottom-4 z-20 items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrevSlide}
+              aria-label="Previous slide"
+              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all cursor-pointer border border-white/20 active:scale-95"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextSlide}
+              aria-label="Next slide"
+              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all cursor-pointer border border-white/20 active:scale-95"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Slide Indicators: Active dot is wider ultramarine pill */}
-      <div className="flex items-center justify-center gap-2 mt-3">
-        {HERO_SLIDES.map((s, idx) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => setCurrentSlide(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
-            className={`h-2.5 rounded-full border border-[#0E1330] transition-all cursor-pointer ${
-              currentSlide === idx ? 'w-7 bg-[#2436F5]' : 'w-2.5 bg-[#FFFFFF]'
-            }`}
-          />
-        ))}
+        {/* Minimal Slide Indicator Line / Dots */}
+        <div className="absolute bottom-3 left-5 sm:left-8 z-20 flex items-center gap-1.5">
+          {HERO_SLIDES.map((s, idx) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setCurrentSlide(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                currentSlide === idx ? 'w-6 bg-[#FFC933]' : 'w-2 bg-white/40 hover:bg-white/60'
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -2,6 +2,36 @@
  * Banner & Marketing Data - Extrovat Lifestyle
  */
 
+export const HERO_SLIDES = [
+  {
+    id: 'hero-1',
+    badge: 'Under ৳999',
+    headline: 'Artisanal Pure Attars & Luxury Perfumes',
+    subtext: 'Discover 100% alcohol-free concentrated fragrance oils crafted for lasting elegance.',
+    buttonText: 'Shop Collection',
+    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200',
+    alt: 'Luxury fragrance bottle'
+  },
+  {
+    id: 'hero-2',
+    badge: 'New Arrival',
+    headline: 'Royal Amber & Oud Collection',
+    subtext: 'Rich, intoxicating notes of authentic Cambodian Oud and warm golden Amber.',
+    buttonText: 'Explore Royal Range',
+    image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=1200',
+    alt: 'Royal Amber perfume bottle'
+  },
+  {
+    id: 'hero-3',
+    badge: 'Special Offer',
+    headline: 'Elegance Redefined For Everyday Luxury',
+    subtext: 'Long-lasting premium perfumes designed to leave an unforgettable sillage.',
+    buttonText: 'View Special Offers',
+    image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=1200',
+    alt: 'Premium perfume bottle'
+  }
+];
+
 export const BANNER_SLIDES = [
   {
     id: 'banner-1',

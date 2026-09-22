@@ -30,16 +30,7 @@ const ICON_MAP = {
 
 /**
  * CategoryGrid Component - Extrovat Lifestyle
- *
- * Requirements:
- * - 5 columns and 2 rows grid that scrolls sideways (CSS grid, grid-auto-flow: column, scroll-snap-type: x mandatory, hidden scrollbar).
- * - Thin track indicator below showing scroll position (only when overflow, aria-hidden).
- * - Tile: rounded-16 (rounded-[16px]) icon box (~60px) with 2px ink border (#0E1330) and soft tinted background.
- * - Inline SVG icon (or optional image at public/categories/<slug>.png with SVG fallback on error).
- * - Centered label of at most 2 lines below, sentence case, 12px.
- * - Tapping a tile triggers onSelectCategory(tile).
- * - Shows active state (blue outline ring-2 ring-[#2436F5] and bold label).
- * - Real button with aria-label and visible focus ring.
+ * Premium, clean category icons.
  */
 export default function CategoryGrid({ activeCategory, onSelectCategory }) {
   const scrollContainerRef = useRef(null);
@@ -70,12 +61,12 @@ export default function CategoryGrid({ activeCategory, onSelectCategory }) {
   }, []);
 
   return (
-    <div className="w-full space-y-2 select-none">
+    <div className="w-full space-y-2 select-none max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
       {/* Scrollable Grid Container */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="w-full overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-1"
+        className="w-full overflow-x-auto scrollbar-none snap-x snap-mandatory py-1"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none'
@@ -97,30 +88,30 @@ export default function CategoryGrid({ activeCategory, onSelectCategory }) {
                 }}
                 aria-label={`Filter by ${tile.label}`}
                 aria-pressed={isActive}
-                className="snap-start flex flex-col items-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2436F5] rounded-xl p-0.5"
+                className="snap-start flex flex-col items-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC933] rounded-xl p-0.5"
               >
                 {/* ~60px Icon Box */}
                 <div
-                  style={{ backgroundColor: tile.bgColor }}
-                  className={`w-[60px] h-[60px] rounded-[16px] border-2 border-[#0E1330] flex items-center justify-center transition-all duration-150 ${
+                  style={{ backgroundColor: isActive ? '#0E1330' : tile.bgColor || '#F8FAFC' }}
+                  className={`w-[58px] h-[58px] rounded-2xl border flex items-center justify-center transition-all duration-200 ${
                     isActive
-                      ? 'shadow-[2px_2px_0px_#2436F5] ring-2 ring-[#2436F5] scale-105'
-                      : 'shadow-[2px_2px_0px_#0E1330] hover:scale-105 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
+                      ? 'border-[#0E1330] text-[#FFC933] shadow-md scale-105'
+                      : 'border-slate-200/90 text-[#0E1330] hover:border-slate-400 hover:shadow-sm'
                   }`}
                 >
                   <IconComponent
-                    className={`w-6 h-6 stroke-[2.25] ${
-                      isActive ? 'text-[#2436F5]' : 'text-[#0E1330]'
+                    className={`w-5 h-5 stroke-[2] ${
+                      isActive ? 'text-[#FFC933]' : 'text-[#0E1330]'
                     }`}
                   />
                 </div>
 
-                {/* Label below <= 2 lines, 12px */}
+                {/* Label below */}
                 <span
                   className={`text-[11px] sm:text-xs text-center leading-tight mt-1.5 max-w-[76px] line-clamp-2 transition-colors ${
                     isActive
-                      ? 'font-heading font-extrabold text-[#2436F5]'
-                      : 'font-sans font-medium text-[#0E1330] group-hover:text-[#2436F5]'
+                      ? 'font-sans font-bold text-[#0E1330]'
+                      : 'font-sans font-medium text-slate-600 group-hover:text-[#0E1330]'
                   }`}
                 >
                   {tile.label}
@@ -133,9 +124,9 @@ export default function CategoryGrid({ activeCategory, onSelectCategory }) {
 
       {/* Thin Scroll Indicator Bar */}
       {hasOverflow && (
-        <div aria-hidden="true" className="w-24 h-1 mx-auto bg-[#0E1330]/10 rounded-full overflow-hidden">
+        <div aria-hidden="true" className="w-20 h-1 mx-auto bg-slate-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#2436F5] rounded-full transition-all duration-150"
+            className="h-full bg-[#0E1330] rounded-full transition-all duration-150"
             style={{
               width: '30%',
               transform: `translateX(${scrollProgress * 2.3}%)`
