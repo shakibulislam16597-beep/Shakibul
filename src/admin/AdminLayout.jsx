@@ -9,6 +9,7 @@ import CategoriesManager from './CategoriesManager';
 import BrandsManager from './BrandsManager';
 import ReviewsManager from './ReviewsManager';
 import AdminOrders from './AdminOrders';
+import InventoryManager from './InventoryManager';
 import ComingSoon from './ComingSoon';
 
 import {
@@ -46,6 +47,17 @@ export default function AdminLayout({ currentHash, user }) {
     staff: false,
     security: false
   });
+
+  // Auto-expand group when active hash belongs to it
+  useEffect(() => {
+    if (currentHash.startsWith('#/admin/inventory')) {
+      setExpandedGroups((prev) => ({ ...prev, inventory: true }));
+    } else if (currentHash.startsWith('#/admin/products')) {
+      setExpandedGroups((prev) => ({ ...prev, products: true }));
+    } else if (currentHash.startsWith('#/admin/orders')) {
+      setExpandedGroups((prev) => ({ ...prev, orders: true }));
+    }
+  }, [currentHash]);
 
   // Fetch pending count once on load for sidebar badge
   useEffect(() => {
@@ -242,6 +254,10 @@ export default function AdminLayout({ currentHash, user }) {
 
     if (currentHash === '#/admin/reviews') {
       return <ReviewsManager />;
+    }
+
+    if (currentHash.startsWith('#/admin/inventory')) {
+      return <InventoryManager currentHash={currentHash} user={user} />;
     }
 
     if (currentHash.startsWith('#/admin/orders')) {
