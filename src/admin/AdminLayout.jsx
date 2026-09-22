@@ -10,6 +10,7 @@ import BrandsManager from './BrandsManager';
 import ReviewsManager from './ReviewsManager';
 import AdminOrders from './AdminOrders';
 import InventoryManager from './InventoryManager';
+import CustomersManager from './CustomersManager';
 import ComingSoon from './ComingSoon';
 
 import {
@@ -258,6 +259,10 @@ export default function AdminLayout({ currentHash, user }) {
 
     if (currentHash.startsWith('#/admin/inventory')) {
       return <InventoryManager currentHash={currentHash} user={user} />;
+    }
+
+    if (currentHash.startsWith('#/admin/customers')) {
+      return <CustomersManager currentHash={currentHash} user={user} />;
     }
 
     if (currentHash.startsWith('#/admin/orders')) {
