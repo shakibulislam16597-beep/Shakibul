@@ -11,6 +11,7 @@ import ReviewsManager from './ReviewsManager';
 import AdminOrders from './AdminOrders';
 import InventoryManager from './InventoryManager';
 import CustomersManager from './CustomersManager';
+import PaymentsManager from './PaymentsManager';
 import ComingSoon from './ComingSoon';
 
 import {
@@ -57,6 +58,8 @@ export default function AdminLayout({ currentHash, user }) {
       setExpandedGroups((prev) => ({ ...prev, products: true }));
     } else if (currentHash.startsWith('#/admin/orders')) {
       setExpandedGroups((prev) => ({ ...prev, orders: true }));
+    } else if (currentHash.startsWith('#/admin/payments')) {
+      setExpandedGroups((prev) => ({ ...prev, payments: true }));
     }
   }, [currentHash]);
 
@@ -263,6 +266,10 @@ export default function AdminLayout({ currentHash, user }) {
 
     if (currentHash.startsWith('#/admin/customers')) {
       return <CustomersManager currentHash={currentHash} user={user} />;
+    }
+
+    if (currentHash.startsWith('#/admin/payments')) {
+      return <PaymentsManager currentHash={currentHash} user={user} />;
     }
 
     if (currentHash.startsWith('#/admin/orders')) {
